@@ -18,7 +18,7 @@ Arduino_ESP32RGBPanel *rgbpanel = new Arduino_ESP32RGBPanel(
     15 /* B0 */, 7  /* B1 */, 6  /* B2 */, 5  /* B3 */, 4 /* B4 */,
     0 /* hsync_polarity */, 210 /* hsync_front_porch */, 30 /* hsync_pulse_width */, 16 /* hsync_back_porch */,
     0 /* vsync_polarity */, 22 /* vsync_front_porch */, 13 /* vsync_pulse_width */, 10 /* vsync_back_porch */,
-    1 /* pclk_active_neg */, 16000000U /* prefer_speed */
+    1 /* pclk_active_neg */, 16000000 /* prefer_speed */
 );
 
 Arduino_RGB_Display *gfx = new Arduino_RGB_Display(
@@ -171,8 +171,6 @@ void setup()
     // ----------------------
     ui_init();
     Serial.println("LVGL e UI inicializados!");
-
-    
 
     Serial.println("Setup concluído!");
 }
