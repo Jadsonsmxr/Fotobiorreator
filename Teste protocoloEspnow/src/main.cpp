@@ -59,7 +59,7 @@ void setup() {
 
 
 void loop() {
-  const char msg[] = "Ola!1";
+  const char msg[] = "Ola! Tela";
   esp_now_send(peerAddress, (uint8_t *)msg, sizeof(msg));
   delay(5000);
  
