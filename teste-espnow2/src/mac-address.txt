@@ -1,0 +1,15 @@
+#include <Arduino.h>
+#include <esp_now.h>
+#include <WiFi.h>
+
+
+void setup() {
+  Serial.begin(115200);
+ 
+  WiFi.mode(WIFI_MODE_STA);
+  delay(6000);
+  Serial.print("Endereço MAC: ");
+  Serial.println(WiFi.macAddress());
+}
+void loop() {
+  } 
