@@ -1,13 +1,10 @@
 #include <Arduino.h>
-
- // Arquivos gerados pelo EEZ Studio
 #include <Display_config.h>
+#include <Display_custom.h>
 
 
 
-// ----------------------
-// Setup
-// ----------------------
+
 void setup()
 {
     Serial.begin(115200);
@@ -15,14 +12,13 @@ void setup()
 
 
     init_UI();
-   
+    
+    ui_custom_update_values(35, 7.4, 415); // Valores iniciais de exemplo
 
     Serial.println("Setup concluído!");
 }
 
-// ----------------------
-// Loop principal
-// ----------------------
+
 void loop()
 {
  update_UI();
