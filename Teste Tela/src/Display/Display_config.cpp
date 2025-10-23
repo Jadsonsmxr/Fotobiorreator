@@ -1,7 +1,8 @@
 #include <lvgl.h>
 #include <Arduino_GFX_Library.h>
 #include <TAMC_GT911.h>
-#include <touch.h>
+#include <Display/touch.h>
+
 #include <ui/ui.h> 
 
 #define RST_PIN  2
@@ -25,7 +26,7 @@ Arduino_RGB_Display *gfx = new Arduino_RGB_Display(
 // ----------------------
 // Buffers LVGL (em PSRAM)
 // ----------------------
-#define LV_BUFFER_LINES 50
+#define LV_BUFFER_LINES 200
 #define LV_BUFFER_SIZE (800 * LV_BUFFER_LINES)
 
 static lv_color_t *buf1 = nullptr;
@@ -59,10 +60,10 @@ void my_touchpad_read(lv_indev_t *indev, lv_indev_data_t *data)
       /*Set the coordinates*/
       data->point.x = touch_last_x;
       data->point.y = touch_last_y;
-      Serial.print( "Data x " );
-      Serial.println( data->point.x );
-      Serial.print( "Data y " );
-      Serial.println( data->point.y );
+      //Serial.print( "Data x " );
+      //Serial.println( data->point.x );
+      //Serial.print( "Data y " );
+      //Serial.println( data->point.y );
     }
     else if (touch_released())
     {
@@ -102,7 +103,7 @@ void init_UI() {
     // Inicializa display físico
     gfx->begin();
     gfx->fillScreen(BLACK);
-    Serial.println("Display iniciado!");
+    //Serial.println("Display iniciado!");
 
     // ----------------------
     // Inicializa LVGL
@@ -159,4 +160,6 @@ void init_UI() {
     // ----------------------
     ui_init();
     Serial.println("LVGL e UI inicializados!");
+
+    
 }

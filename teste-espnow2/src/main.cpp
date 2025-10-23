@@ -5,19 +5,38 @@
 uint8_t peerAddress[] = { 0x24, 0x6F, 0x28, 0x77, 0xF1, 0x14 };
 
 
+typedef struct {
+  char topic[16];
+  float value;
+} struct_message;
+
+struct_message myData;
+
+
 void onDataSent(const esp_now_send_info_t *info, esp_now_send_status_t status) {
   Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Enviado!" : "Falhou!");
 }
 
 
 
-void onDataRecv(const esp_now_recv_info_t *info, const uint8_t *data, int len) {
-  Serial.print("Recebido: ");
-  Serial.write(data, len);
-  Serial.println();
+// void onDataRecv(const esp_now_recv_info_t *info, const uint8_t *data, int len) {
+//   Serial.print("Recebido: ");
+//   Serial.write(data, len);
+//   Serial.println();
+// }
+
+void sendTopic(const char *topic, float value) {
+  strcpy(myData.topic, topic);  // copia o nome do tópico
+  myData.value = value;         // define o valor
+
+  esp_err_t result = esp_now_send(peerAddress, (uint8_t *)&myData, sizeof(myData));
+
+  if (result == ESP_OK) {
+    Serial.printf("📤 Enviando -> %s: %.2f\n", topic, value);
+  } else {
+    Serial.println("❌ Erro ao enviar");
+  }
 }
-
-
 
 
 void setup() {
@@ -36,7 +55,6 @@ void setup() {
   }
 
 
-
   // Adiciona o outro ESP como peer
   
   esp_now_peer_info_t peerInfo = {};
@@ -51,7 +69,7 @@ void setup() {
   }
   esp_now_register_send_cb(onDataSent);
   // Callback de recebimento
-  esp_now_register_recv_cb(onDataRecv);
+  //esp_now_register_recv_cb(onDataRecv);
 
   Serial.println("ESP-NOW inicializado com sucesso!");
 }
@@ -59,8 +77,17 @@ void setup() {
 
 
 void loop() {
-  const char msg[] = "Ola! microcontrolador";
-  esp_now_send(peerAddress, (uint8_t *)msg, sizeof(msg));
-  delay(5000);
+  float temperatura = 25.6;
+  float ph = 7.15;
+  float co2 = 415.2;
+
+  sendTopic("temp", temperatura);
+  delay(200);
+  sendTopic("ph", ph);
+  delay(200);
+  sendTopic("co2", co2);
+  delay(200);
+
+  delay(2000);
  
   }
