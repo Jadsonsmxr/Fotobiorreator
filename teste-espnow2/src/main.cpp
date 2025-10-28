@@ -12,6 +12,9 @@ typedef struct {
 
 struct_message myData;
 
+float temperatura = 25.6;
+float ph = 7.15;
+float co2 = 415;
 
 void onDataSent(const esp_now_send_info_t *info, esp_now_send_status_t status) {
   Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Enviado!" : "Falhou!");
@@ -77,9 +80,7 @@ void setup() {
 
 
 void loop() {
-  float temperatura = 25.6;
-  float ph = 7.15;
-  float co2 = 415.2;
+ 
 
   sendTopic("temp", temperatura);
   delay(200);

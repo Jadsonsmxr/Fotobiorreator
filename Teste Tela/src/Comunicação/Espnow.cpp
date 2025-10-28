@@ -16,6 +16,10 @@ struct_message incomingData;
 //   Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Enviado!" : "Falhou!");
 // }
 
+volatile float newTemp = NAN;
+volatile float newPh   = NAN;
+volatile float newCo2  = NAN;
+volatile bool newDataAvailable = false;
 
 
 void onDataRecv(const esp_now_recv_info_t *info, const uint8_t *data, int len) {
@@ -23,22 +27,19 @@ void onDataRecv(const esp_now_recv_info_t *info, const uint8_t *data, int len) {
 
   //Serial.printf("Recebido -> Tópico: %s | Valor: %.2f\n", incomingData.topic, incomingData.value);
 
-  if (strcmp(incomingData.topic, "temp") == 0) {
-    Serial.printf(" Temperatura: %.2f °C\n", incomingData.value);
-    ui_custom_update_values(incomingData.value, NAN, NAN); // Atualiza apenas a temperatura na UI
+ if (strcmp(incomingData.topic, "temp") == 0) {
+    newTemp = incomingData.value;
   } 
   else if (strcmp(incomingData.topic, "ph") == 0) {
-    Serial.printf(" pH: %.2f\n", incomingData.value);
-    ui_custom_update_values(NAN, incomingData.value, NAN);
+    newPh = incomingData.value;
   } 
   else if (strcmp(incomingData.topic, "co2") == 0) {
-    Serial.printf(" CO₂: %.2f ppm\n", incomingData.value);
-    ui_custom_update_values(NAN, NAN, incomingData.value);
+    newCo2 = incomingData.value;
   } 
-  else {
-    Serial.println("Tópico desconhecido");
-  }
+
+  newDataAvailable = true;
 }
+
 
 void init_communication() {
   // Inicializa Wi-Fi no modo STA
@@ -71,4 +72,12 @@ void init_communication() {
   esp_now_register_recv_cb(onDataRecv);
 
   Serial.println("ESP-NOW inicializado com sucesso!");
+}
+
+void update_data(){
+    if (newDataAvailable) {
+    newDataAvailable = false;
+    //Serial.printf(" Atualizando UI: %.2f %.2f %.2f\n", newTemp, newPh, newCo2);
+    ui_custom_update_values(newTemp, newPh, newCo2);
+  }
 }

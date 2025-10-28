@@ -17,7 +17,7 @@ void setup()
     delay(300);
      // Valores iniciais de exemplo
     init_UI();
-    transitions_screens();
+    //transitions_screens();
     Serial.println("Setup concluído!");
 
 }
@@ -25,6 +25,9 @@ void setup()
 
 void loop()
 {
+
+  
+ update_data();
  update_UI();
  delay(1);
 }

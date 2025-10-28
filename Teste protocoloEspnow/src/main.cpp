@@ -11,7 +11,7 @@ float ph = 7.1;
 float co2 = 415;
 
 typedef struct {
-  char topic[8];
+  char topic[16];
   float value;
 } struct_message;
 
@@ -51,6 +51,8 @@ void setup() {
   WiFi.mode(WIFI_MODE_STA);
   delay(100);
   Serial.print("Meu MAC: ");
+  
+
   Serial.println(WiFi.macAddress());
 
   // Inicializa o ESP-NOW
@@ -85,12 +87,12 @@ void loop() {
 
 
   sendTopic("temp", temperatura);
-  delay(1000);
+  delay(600);
   sendTopic("ph", ph);
-  delay(1000);
+  delay(600);
   sendTopic("co2", co2);
-  delay(1000);
+  delay(600);
 
-  delay(10000);
+  delay(6000);
  
   }
