@@ -8,14 +8,16 @@
 void setup()
 {
     Serial.begin(115200);
+    
     Serial.println("Iniciando...");
 
+    
+    
+    init_communication();
+    delay(300);
+     // Valores iniciais de exemplo
     init_UI();
     transitions_screens();
-    init_communication();
-     // Valores iniciais de exemplo
-
-
     Serial.println("Setup concluído!");
 
 }

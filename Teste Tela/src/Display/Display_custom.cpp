@@ -55,13 +55,23 @@ void ui_custom_update_values(float temp, float ph, float co2) {
     lv_chart_refresh(objects.chart_co2);
 }
 
-void transitions_screens() {
-    lv_obj_add_event_cb(objects.button_general, [](lv_event_t * e) {
-        lv_obj_t *dest = (lv_obj_t *)lv_event_get_user_data(e);
-        lv_obj_t *current = lv_scr_act(); // pega tela atual
+static void screen_switch_event(lv_event_t *e) {
+    lv_obj_t *dest = (lv_obj_t *)lv_event_get_user_data(e);
+    lv_obj_t *current = lv_scr_act();
 
-        if(current != dest) { // só troca se for diferente
-            lv_scr_load_anim(dest, LV_SCR_LOAD_ANIM_FADE_IN, 200, 0, true);
-        }
-    }, LV_EVENT_CLICKED, objects.general_screen);
+    if (current == dest) return; // evita recarregar a mesma tela
+
+    // Troca suave e segura, sem travar o render
+    lv_async_call([](void *data) {
+        lv_scr_load((lv_obj_t *)data);
+    }, dest);
+}
+
+void transitions_screens() {
+    // Configura eventos de clique para os botões de navegação
+    lv_obj_add_event_cb(objects.button_home, screen_switch_event, LV_EVENT_CLICKED, objects.home_screen);
+    lv_obj_add_event_cb(objects.button_general1,screen_switch_event, LV_EVENT_CLICKED, objects.general_screen);
+    lv_obj_add_event_cb(objects.button_general2,screen_switch_event, LV_EVENT_CLICKED, objects.general_screen);
+    lv_obj_add_event_cb(objects.button_charts, screen_switch_event, LV_EVENT_CLICKED, objects.charts_screen);
+    
 }

@@ -11,7 +11,7 @@ float ph = 7.1;
 float co2 = 415;
 
 typedef struct {
-  char topic[16];
+  char topic[8];
   float value;
 } struct_message;
 
@@ -91,6 +91,6 @@ void loop() {
   sendTopic("co2", co2);
   delay(1000);
 
-  delay(5000);
+  delay(10000);
  
   }

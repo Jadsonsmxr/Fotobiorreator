@@ -15,7 +15,7 @@ Arduino_ESP32RGBPanel *rgbpanel = new Arduino_ESP32RGBPanel(
     15 /* B0 */, 7  /* B1 */, 6  /* B2 */, 5  /* B3 */, 4 /* B4 */,
     0 /* hsync_polarity */, 210 /* hsync_front_porch */, 30 /* hsync_pulse_width */, 16 /* hsync_back_porch */,
     0 /* vsync_polarity */, 22 /* vsync_front_porch */, 13 /* vsync_pulse_width */, 10 /* vsync_back_porch */,
-    1 /* pclk_active_neg */, 16000000 /* prefer_speed */
+    1 /* pclk_active_neg */, 10000000 /* prefer_speed */
 );
 
 Arduino_RGB_Display *gfx = new Arduino_RGB_Display(
@@ -26,7 +26,7 @@ Arduino_RGB_Display *gfx = new Arduino_RGB_Display(
 // ----------------------
 // Buffers LVGL (em PSRAM)
 // ----------------------
-#define LV_BUFFER_LINES 200
+#define LV_BUFFER_LINES 480
 #define LV_BUFFER_SIZE (800 * LV_BUFFER_LINES)
 
 static lv_color_t *buf1 = nullptr;
@@ -92,14 +92,23 @@ void update_UI() {
     lv_timer_handler(); // Atualiza a UI
 }
 
+
+
+
+
 void init_UI() {
+    pinMode(GFX_BL, OUTPUT);
+    digitalWrite(GFX_BL, LOW);  // Mantém backlight desligado durante a inicialização
+
+
      // Reset físico do painel
     pinMode(RST_PIN, OUTPUT);
-    digitalWrite(RST_PIN, LOW);
-    delay(50);
-    digitalWrite(RST_PIN, HIGH);
-    delay(50);
 
+    digitalWrite(RST_PIN, LOW);
+    delay(100);
+    digitalWrite(RST_PIN, HIGH);
+    delay(100);
+    lv_init();
     // Inicializa display físico
     gfx->begin();
     gfx->fillScreen(BLACK);
@@ -108,7 +117,8 @@ void init_UI() {
     // ----------------------
     // Inicializa LVGL
     // ----------------------
-    lv_init();
+   
+
 
 
 
@@ -159,7 +169,9 @@ void init_UI() {
     // Inicializa interface do EEZ Studio
     // ----------------------
     ui_init();
+    delay(200);
     Serial.println("LVGL e UI inicializados!");
+    digitalWrite(GFX_BL, HIGH);  // Ativa backlight após a inicialização
 
     
 }
