@@ -3,27 +3,13 @@
 // #include <CO2Sensor.h>
 
 
-
-
-
-//IMPORTANTE: O SENSOR NAO FOI CALIBRADO AINDA, FALTA ACHAR OS VALORES CERTOS DE V400 E V40000, ALEM DISSO QUERO COLOCAR UMA AMOSTRA A CADA 1 A 5 MINUTOS PARA EVITAR RUIDOS.
-//TENTAR DIMINUIR E DEIXAR O CODIGO MAIS LIMPO POSSIVEL.
-
-
-
-
-
 extern Adafruit_ADS1115 ads; 
 // CO2Sensor CO2sensor(1, 0.99, 3); // usa canal 1 do ADS1115
 
 
 // ============ INSIRA AQUI OS VALORES GERADOS NA CALIBRAÇÃO ============
-// float A_cal =  1.3117055893;   // <-- COLE O VALOR QUE O SEU CÓDIGO GEROU
-// float B_cal =-0.0604309589;   // <-- COLE O VALOR QUE O SEU CÓDIGO GEROU
-
-float V400 = 0.65;     // tensão medida em 400 ppm (ar ambiente)
-float V40000 = 0.40;   // tensão medida em 40000 ppm
-
+float A_cal =  1.3117055893;   // <-- COLE O VALOR QUE O SEU CÓDIGO GEROU
+float B_cal =-0.0604309589;   // <-- COLE O VALOR QUE O SEU CÓDIGO GEROU
 
 // ===================== FILTRO EMA =====================
 float ema = 0.0;
@@ -32,11 +18,10 @@ float alpha = 0.15;  // suavização moderada
 
 // ---------- Parâmetros de funcionamento ----------
 const unsigned long INTERVALO_MS = 1000UL; // leitura nominal a cada 1s
-const unsigned long INTERVALO_MS_PRINT = 10000UL; // leitura nominal a cada 1s
 const int NUM_MEDIANA = 5;    // número de leituras rápidas para mediana
 const int TAMANHO_JANELA = 30;      // janela de média (30s se intervalo=1s)
 const float ALFA_EMA = 0.15; // suavização final (menor = mais suave)
-const float LIMIAR_STDDEV_V = 0.05; // 15 mV -> limite de estabilidade
+const float LIMIAR_STDDEV_V = 0.020; // 15 mV -> limite de estabilidade
 
 // ---------- Buffers e estado ----------
 float anel[TAMANHO_JANELA];
@@ -83,15 +68,9 @@ void calculaMediaDesvio(float &media, float &desvio) {
 // usa sua fórmula já calibrada A_cal e B_cal (devem ser globais vindos da calibração)
 float voltsParaPPM(float V) {
   // proteção contra divisão por zero (B_cal não pode ser 0)
-//   if (B_cal == 0) return -1;
-//   return exp((V - A_cal) / B_cal);
-    float buffer = 0;
-    buffer = (V400 - V40000)/(log10(400) - log10(40000)); // Delta V
-    buffer = (V - V400)/buffer;
-    buffer += log10(400);
-    return pow(10, buffer);
-
-}   
+  if (B_cal == 0) return -1;
+  return exp((V - A_cal) / B_cal);
+}
 
 
 
@@ -189,18 +168,13 @@ unsigned long agoraMs = millis();
   calculaMediaDesvio(mediaV, desvioV);
 
   // 4) EMA sobre média (suaviza a apresentação final)
-  if (contagemAnel == 1 && mediaSuavizada == 0.0) 
-  mediaSuavizada = mediaV; // inicializa na primeira amostra
+  if (contagemAnel == 1 && mediaSuavizada == 0.0) mediaSuavizada = mediaV; // inicializa na primeira amostra
   mediaSuavizada = ALFA_EMA * mediaV + (1.0 - ALFA_EMA) * mediaSuavizada;
 
   // 5) verifica estabilidade e converte p/ ppm
   bool estavel = (contagemAnel == TAMANHO_JANELA) && (desvioV < LIMIAR_STDDEV_V);
-  //float Vcorrigida = mediaSuavizada;
-  float Vcorrigida = mediaV; // se quiser aplicar A/B no sinal: Vcorrigida = A_cal * mediaSuavizada + B_cal;
+  float Vcorrigida = mediaSuavizada; // se quiser aplicar A/B no sinal: Vcorrigida = A_cal * mediaSuavizada + B_cal;
   float ppm = voltsParaPPM(Vcorrigida);
-
-
-
 
   // 6) saída simples e em PT-BR
   if (estavel) {

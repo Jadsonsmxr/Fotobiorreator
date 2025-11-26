@@ -4,6 +4,7 @@
 #include <sensors/temperature.h>
 #include <sensors/light.h>
 #include <sensors/co2.h>
+#include <sensors/co2calibration.h>
 // put function declarations here:
 int teste = 1;
 Adafruit_ADS1115 ads;
@@ -22,6 +23,7 @@ void setup() {
   //codigo em testes
   else if (teste ==1) {
     sensorCO2_Setup();
+    //calibrationCo2();
   }
 }
 

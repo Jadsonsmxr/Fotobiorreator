@@ -60,12 +60,12 @@ int CO2Sensor::read() {
     //float millivolts = avgRaw * 0.1875;
 
     // Filtro de inércia (EMA)
-    _co2_v = (1 - _inertia) * (sum*6144.0)/(32768.0*_tries) + (_co2_v * _inertia);
+    _co2_v = (1 - _inertia) * (sum*2048.0)/(32768.0*_tries) + (_co2_v * _inertia);
 
     // Converte tensão → ppm via modelo exponencial
     double co2_exp = (_co2_a - _co2_v) / co2_b;
     _co2ppm = pow(co2_d, co2_exp);
-
+     //_co2ppm = ads.readADC_SingleEnded(_adsChannel);
     // Níveis de LED
     if (_co2ppm < CO2_LOW) {
         _greenLevel = 255;
