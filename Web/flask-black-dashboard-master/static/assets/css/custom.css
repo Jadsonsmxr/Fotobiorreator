@@ -1,0 +1,56 @@
+.sidebar,
+.off-canvas-sidebar {
+  background: #52b0f4;
+  background: linear-gradient(0deg, #52b0f4 0%, #03b653 100%);
+  height: calc(100vh - 90px);
+  /* width: 5%; */
+
+}
+.main-panel {
+  border-top:2px solid #03b653;
+  
+}
+
+
+
+.KPI {
+    text-align: left;
+}
+
+.KPI i {
+    font-size: 22px;
+    vertical-align: middle;
+}
+
+.KPI .KPI-value {
+    margin-bottom: 0px ; 
+    
+}
+
+.KPI .card-body .card-title{
+    margin-bottom: 5px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.KPI .color-co2total {
+    color: #2ecc71 !important;
+}
+
+.KPI .color-efficiency {
+    color: #00cfe8 !important;
+}
+
+.KPI .color-co2monthly {
+    color: #20c997 !important;
+}
+
+
+
+.card-body .chart-area #gauge {
+    width: 100%;
+    height: 200px;
+}
+
+.KPI .color-watch-time {
+    color: #4dabf7 !important;
+}

@@ -1,0 +1,475 @@
+version - atual
+var gradientChartOptionsConfigurationWithTooltipPurple = {
+      maintainAspectRatio: false,
+
+      scales: { 
+        yAxes: [{
+            id: 'y-axis-0',
+            display: true,
+          ticks: {
+            min: 200,
+            max: 500,
+            stepSize: 25,
+          },
+        }]
+    
+        },
+
+    
+
+
+      legend: { display: false },
+
+      tooltips: {
+        backgroundColor: '#f5f5f5',
+        titleFontColor: '#333',
+        bodyFontColor: '#666',
+        bodySpacing: 4,
+        xPadding: 12,
+        mode: "nearest",
+        intersect: 0,
+        position: "nearest"
+      },
+      responsive: true,
+
+      annotation: {
+        annotations: [{
+            type: 'line',
+            mode: 'horizontal',
+            scaleID: 'y-axis-0',
+            value: 350,
+            borderColor: '#4dff50ff',
+            borderWidth: 1,
+            label: {
+                enabled: true,
+                content: 'Limite seguro',
+                position: "top",  
+                yAdjust: -10, 
+                backgroundColor: "rgba(0, 0, 0, 0.2)"
+                
+            }
+        }]
+    },
+
+    };
+
+
+
+main = {
+   
+
+  initDashboardPageCharts: function () {
+
+    
+
+
+    var chart_labels_Anual = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+    var chart_labels_Mensal = ['W1','W2','W3','W4'];
+    var chart_labels_Quinzenal = ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15'];
+    var chart_labels_Semanal = ['MON','TUE','WED','THU','FRI','SAT','SUN'];
+    var chart_labels_Diario = ['0h','2h','4h','6h','8h','10h','12h','14h','16h','18h','20h','22h'];
+
+
+    var chart_data_Quinzenal = [ 425,420,416,411,407,402,398,393,389,384,379,373,368,360,350];
+
+    var chart_labels = chart_labels_Quinzenal;
+    var chart_data   = chart_data_Quinzenal;
+
+    var ctx = document.getElementById("chartBig1").getContext('2d');
+
+    var gradientStroke = ctx.createLinearGradient(0, 230, 0, 50);
+    gradientStroke.addColorStop(1, 'rgba(72,72,176,0.1)');
+    gradientStroke.addColorStop(0.4, 'rgba(72,72,176,0.0)');
+    gradientStroke.addColorStop(0, 'rgba(119,52,169,0)');
+
+    var main_config = {
+      type: 'line',
+      data: {
+        labels: chart_labels,
+        datasets: [{
+          label: "My First dataset",
+          fill: true,
+          backgroundColor: gradientStroke,
+          pointBackgroundColor: '#00d6b4',
+          borderColor: '#00d6b4',
+          borderWidth: 2,
+          pointRadius: 4,
+          data: chart_data
+        }]
+      },
+      options: gradientChartOptionsConfigurationWithTooltipPurple
+    };
+   
+
+
+
+
+
+
+
+  new Chart(ctx, main_config);
+  this.createLineChart('chartBig2', chart_labels, chart_data, 'rgba(153, 102, 255, 1)');
+  },
+
+
+  createLineChart: function(canvasId, labels, data, color) {
+    var ctx = document.getElementById(canvasId).getContext('2d');
+
+    return new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'CO₂ (ppm)',
+          data: data,
+          borderColor: color,
+          backgroundColor: color.replace('1)', '0.15)'),
+          borderWidth: 2,
+          pointRadius: 4,
+          fill: true
+        }]
+      },
+      options: gradientChartOptionsConfigurationWithTooltipPurple
+    });
+  }
+};
+
+
+versao-nova
+
+
+
+
+var gradientChartOptionsConfigurationWithTooltipmain = {
+      maintainAspectRatio: false,
+
+      scales: { 
+        yAxes: [{
+            id: 'y-axis-0',
+            display: true,
+            ticks: {
+                min: 200,
+                max: 500,
+                stepSize: 25,
+            },
+        }]
+    
+        },
+
+
+      legend: { display: false },
+
+      tooltips: {
+        backgroundColor: '#f5f5f5',
+        titleFontColor: '#333',
+        bodyFontColor: '#666',
+        bodySpacing: 4,
+        xPadding: 12,
+        mode: "nearest",
+        intersect: 0,
+        position: "nearest"
+      },
+      responsive: true,
+
+      annotation: {
+        annotations: [{
+            type: 'line',
+            mode: 'horizontal',
+            scaleID: 'y-axis-0',
+            value: 350,
+            borderColor: '#4dff50ff',
+            borderWidth: 1,
+            label: {
+                enabled: true,
+                content: 'Limite seguro',
+                position: "top",  
+                yAdjust: -10, 
+                backgroundColor: "rgba(0, 0, 0, 0.2)"
+                
+            }
+        }]
+    },
+
+    };
+
+
+    var gradientChartOptionsConfigurationWithTooltipco2 = {
+      maintainAspectRatio: false,
+
+      scales: { 
+        yAxes: [{
+            id: 'y-axis-0',
+            display: true,
+            ticks: {
+                min: 200,
+                max: 500,
+                stepSize: 25,
+            },
+        }]
+    
+        },
+
+
+      legend: { display: false },
+
+      tooltips: {
+        backgroundColor: '#f5f5f5',
+        titleFontColor: '#333',
+        bodyFontColor: '#666',
+        bodySpacing: 4,
+        xPadding: 12,
+        mode: "nearest",
+        intersect: 0,
+        position: "nearest"
+      },
+      responsive: true,
+
+
+    };
+
+     var gradientChartOptionsConfigurationWithTooltippH = {
+      maintainAspectRatio: false,
+
+      scales: { 
+        yAxes: [{
+            id: 'y-axis-0',
+            display: true,
+            ticks: {
+                min: 200,
+                max: 500,
+                stepSize: 25,
+            },
+        }]
+    
+        },
+
+
+      legend: { display: false },
+
+      tooltips: {
+        backgroundColor: '#f5f5f5',
+        titleFontColor: '#333',
+        bodyFontColor: '#666',
+        bodySpacing: 4,
+        xPadding: 12,
+        mode: "nearest",
+        intersect: 0,
+        position: "nearest"
+      },
+      responsive: true,
+
+
+    };
+
+     var gradientChartOptionsConfigurationWithTooltipTemperature = {
+      maintainAspectRatio: false,
+
+      scales: { 
+        yAxes: [{
+            id: 'y-axis-0',
+            display: true,
+            ticks: {
+                min: 200,
+                max: 500,
+                stepSize: 25,
+            },
+        }]
+    
+        },
+
+
+      legend: { display: false },
+
+      tooltips: {
+        backgroundColor: '#f5f5f5',
+        titleFontColor: '#333',
+        bodyFontColor: '#666',
+        bodySpacing: 4,
+        xPadding: 12,
+        mode: "nearest",
+        intersect: 0,
+        position: "nearest"
+      },
+      responsive: true,
+
+
+    };
+
+     var gradientChartOptionsConfigurationWithTooltipLuminosity = {
+      maintainAspectRatio: false,
+
+      scales: { 
+        yAxes: [{
+            id: 'y-axis-0',
+            display: true,
+            ticks: {
+                min: 200,
+                max: 500,
+                stepSize: 25,
+            },
+        }]
+    
+        },
+
+
+      legend: { display: false },
+
+      tooltips: {
+        backgroundColor: '#f5f5f5',
+        titleFontColor: '#333',
+        bodyFontColor: '#666',
+        bodySpacing: 4,
+        xPadding: 12,
+        mode: "nearest",
+        intersect: 0,
+        position: "nearest"
+      },
+      responsive: true,
+
+
+    };
+
+
+
+    var main_config = {
+      type: 'line',
+      data: {
+        labels: chart_labels,
+        datasets: [{
+          label: "My First dataset",
+          fill: true,
+          backgroundColor: gradientStroke,
+          pointBackgroundColor: '#00d6b4',
+          borderColor: '#00d6b4',
+          borderWidth: 2,
+          pointRadius: 4,
+          data: chart_data
+        }]
+      },
+      options: gradientChartOptionsConfigurationWithTooltipmain
+    };
+
+    var co2_config = {
+      type: 'line',
+      data: {
+        labels: chart_labels,
+        datasets: [{
+          label: "My First dataset",
+          fill: true,
+          backgroundColor: gradientStroke,
+          pointBackgroundColor: '#00d6b4',
+          borderColor: '#00d6b4',
+          borderWidth: 2,
+          pointRadius: 4,
+          data: chart_data
+        }]
+      },
+      options: gradientChartOptionsConfigurationWithTooltipco2
+    };
+
+    var pH_config = {
+      type: 'line',
+      data: {
+        labels: chart_labels,
+        datasets: [{
+          label: "My First dataset",
+          fill: true,
+          backgroundColor: gradientStroke,
+          pointBackgroundColor: '#00d6b4',
+          borderColor: '#00d6b4',
+          borderWidth: 2,
+          pointRadius: 4,
+          data: chart_data
+        }]
+      },
+      options: gradientChartOptionsConfigurationWithTooltippH
+    };
+
+
+    var Temperature_config = {
+      type: 'line',
+      data: {
+        labels: chart_labels,
+        datasets: [{
+          label: "My First dataset",
+          fill: true,
+          backgroundColor: gradientStroke,
+          pointBackgroundColor: '#00d6b4',
+          borderColor: '#00d6b4',
+          borderWidth: 2,
+          pointRadius: 4,
+          data: chart_data
+        }]
+      },
+      options: gradientChartOptionsConfigurationWithTooltipTemperature
+    };
+
+    var Luminosity_config = {
+      type: 'line',
+      data: {
+        labels: chart_labels,
+        datasets: [{
+          label: "My First dataset",
+          fill: true,
+          backgroundColor: gradientStroke,
+          pointBackgroundColor: '#00d6b4',
+          borderColor: '#00d6b4',
+          borderWidth: 2,
+          pointRadius: 4,
+          data: chart_data
+        }]
+      },
+      options: gradientChartOptionsConfigurationWithTooltipLuminosity
+    };
+
+
+
+
+main = {
+
+
+
+
+
+
+
+
+    createLineChart: function(canvasId, labels, dataset_label, data, color, options) {
+    var ctx = document.getElementById(canvasId).getContext('2d');
+
+    return new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: dataset_label,
+          data: data,
+          borderColor: color,
+          backgroundColor: color.replace('1)', '0.15)'),
+          borderWidth: 2,
+          pointRadius: 4,
+          fill: true
+        }]
+      },
+      options: options
+    })
+  }
+  }
+
+
+ initDashboardPageCharts: function () {
+
+
+
+
+
+ var chart_data_Quinzenal_main = [ 425,420,416,411,407,402,398,393,389,384,379,373,368,360,350];
+ var chart_data_5min_co2 = [422,421,419,420,418,417,415,414,412,411,409,408]
+
+ this.createLinearChart(chartBig1, remoção de co2, CO2, chart_data_Quinzenal_main, #00d6b4, gradientChartOptionsConfigurationWithTooltipmain)
+
+
+
+
+ }
+}
