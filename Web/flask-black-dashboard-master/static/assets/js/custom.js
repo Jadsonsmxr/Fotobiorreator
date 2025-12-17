@@ -237,13 +237,61 @@ main = {
 
 
     this.createLineChart("chartBig1", chart_labels_Quinzenal_main, 'CO2', chart_data_Quinzenal_main, 'rgba(0, 214, 180, 1)', gradientChartOptionsConfigurationWithTooltipmain, 3 ,true)
-    this.createLineChart("chartCo2", chart_labels_5min_co2, 'CO2', chart_data_5min_co2, 'rgba(0, 214, 68, 1)', gradientChartOptionsConfigurationWithTooltipco2, 0)
+    // this.createLineChart("chartCo2", chart_labels_5min_co2, 'CO2', chart_data_5min_co2, 'rgba(0, 214, 68, 1)', gradientChartOptionsConfigurationWithTooltipco2, 0)
     // this.createLineChart("chartpH", chart_labels_5min_co2, 'pH', chart_data_5min_pH, 'rgba(214, 0, 180, 1)', gradientChartOptionsConfigurationWithTooltippH)
-    this.createLineChart("chartTemperature", chart_labels_5min_co2, 'Temperatura', chart_data_5min_co2, 'rgba(214, 180, 0, 1)', gradientChartOptionsConfigurationWithTooltipTemperature)
-    this.createLineChart("chartLuminosity", chart_labels_5min_co2, 'Luminosidade', chart_data_5min_co2, 'rgba(255, 255, 255, 1)', gradientChartOptionsConfigurationWithTooltipLuminosity)
+    // this.createLineChart("chartTemperature", chart_labels_5min_co2, 'Temperatura', chart_data_5min_co2, 'rgba(214, 180, 0, 1)', gradientChartOptionsConfigurationWithTooltipTemperature)
+    // this.createLineChart("chartLuminosity", chart_labels_5min_co2, 'Luminosidade', chart_data_5min_co2, 'rgba(255, 255, 255, 1)', gradientChartOptionsConfigurationWithTooltipLuminosity)
 
-const config = {
-  "id": "gauge",
+const configco2 = {
+  "id": "gaugeco2",
+  "value": 445,
+  "min": 200,
+  "max": 500,
+  "decimals": 1,
+  "symbol": "",
+  "reverse": false,
+  
+  "relativeGaugeSize": true,
+  "gaugeWidthScale": 0.8,
+  "gaugeColor": "#1e1e2f",
+  "valueFontColor": "#777777ff",
+  "labelFontColor": "#555454ff",
+  "levelColors": [
+    "rgba(0, 214, 180, 1)"
+  ],
+  "noGradient": false,
+  "showSectorColors": false,
+  "title": "",
+  "titleFontColor": "#cb1313ff",
+  "titleFontFamily": "Arial",
+  "titleFontWeight": "bold",
+  "titlePosition": "above",
+  "label": "ppm",
+  "minTxt": "",
+  "maxTxt": "",
+  "hideValue": false,
+  "hideMinMax": false,
+  "humanFriendly": false,
+  "formatNumber": false,
+  "donut": false,
+  "donutStartAngle": 90,
+  "differential": false,
+  "displayRemaining": false,
+  "pointer": false,
+  "targetLineColor": "#000000",
+  "targetLineWidth": 1.5,
+  "startAnimationTime": 700,
+  "startAnimationType": ">",
+  "refreshAnimationTime": 700,
+  "counter": false,
+  "showInnerShadow": true,
+  "shadowOpacity": 0.2,
+  "shadowSize": 5,
+  "shadowVerticalOffset": 3
+}
+
+const configph = {
+  "id": "gaugeph",
   "value": 7.4383517856623955,
   "min": 0,
   "max": 14,
@@ -257,7 +305,7 @@ const config = {
   "valueFontColor": "#777777ff",
   "labelFontColor": "#555454ff",
   "levelColors": [
-    "#a9d70b"
+    "rgba(0, 214, 180, 1)"
   ],
   "noGradient": false,
   "showSectorColors": false,
@@ -290,10 +338,109 @@ const config = {
   "shadowVerticalOffset": 3
 }
 
+const configTemperature = {
+  "id": "gaugeTemperature",
+  "value": 32,
+  "min": 20,
+  "max": 40,
+  "decimals": 1,
+  "symbol": "",
+  "reverse": false,
+  
+  "relativeGaugeSize": true,
+  "gaugeWidthScale": 0.8,
+  "gaugeColor": "#1e1e2f",
+  "valueFontColor": "#777777ff",
+  "labelFontColor": "#555454ff",
+  "levelColors": [
+    "rgba(0, 214, 180, 1)"
+  ],
+  "noGradient": false,
+  "showSectorColors": false,
+  "title": "",
+  "titleFontColor": "#cb1313ff",
+  "titleFontFamily": "Arial",
+  "titleFontWeight": "bold",
+  "titlePosition": "above",
+  "label": "°C",
+  
+  "minTxt": "",
+  "maxTxt": "",
+  "hideValue": false,
+  "hideMinMax": false,
+  "humanFriendly": false,
+  "formatNumber": false,
+  "donut": false,
+  "donutStartAngle": 90,
+  "differential": false,
+  "displayRemaining": false,
+  "pointer": false,
+  "targetLineColor": "#000000",
+  "targetLineWidth": 1.5,
+  "startAnimationTime": 700,
+  "startAnimationType": ">",
+  "refreshAnimationTime": 700,
+  "counter": false,
+  "showInnerShadow": true,
+  "shadowOpacity": 0.2,
+  "shadowSize": 5,
+  "shadowVerticalOffset": 3
+}
 
-    const gaugeCo2 = new JustGage(config);
+const configLuminosity = {
+  "id": "gaugeLuminosity",
+  "value": 712,
+  "min": 0,
+  "max": 1000,
+  "decimals": 1,
+  "symbol": "",
+  "reverse": false,
+  
+  "relativeGaugeSize": true,
+  "gaugeWidthScale": 0.8,
+  "gaugeColor": "#1e1e2f",
+  "valueFontColor": "#777777ff",
+  "labelFontColor": "#555454ff",
+  "levelColors": [
+    "rgba(0, 214, 180, 1)"
+  ],
+  "noGradient": false,
+  "showSectorColors": false,
+  "title": "",
+  "titleFontColor": "#cb1313ff",
+  "titleFontFamily": "Arial",
+  "titleFontWeight": "bold",
+  "titlePosition": "above",
+  "label": "lux",
+  "minTxt": "",
+  "maxTxt": "",
+  "hideValue": false,
+  "hideMinMax": false,
+  "humanFriendly": false,
+  "formatNumber": false,
+  "donut": false,
+  "donutStartAngle": 90,
+  "differential": false,
+  "displayRemaining": false,
+  "pointer": false,
+  "targetLineColor": "#000000",
+  "targetLineWidth": 1.5,
+  "startAnimationTime": 700,
+  "startAnimationType": ">",
+  "refreshAnimationTime": 700,
+  "counter": false,
+  "showInnerShadow": true,
+  "shadowOpacity": 0.2,
+  "shadowSize": 5,
+  "shadowVerticalOffset": 3
+}
 
-    gaugeCo2.refresh(7);
+    const gaugeCo2 = new JustGage(configco2);
+    const gaugeph = new JustGage(configph);
+    const gaugeTemperature = new JustGage(configTemperature);
+    const gaugeLuminosity = new JustGage(configLuminosity);
+
+    
 
  }
 };

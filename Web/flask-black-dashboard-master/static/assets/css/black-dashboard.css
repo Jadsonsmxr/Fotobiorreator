@@ -11656,7 +11656,7 @@ table.tablesorter thead tr .headerSortDown {
   .main-panel[data="primary"] {
     border-top: 2px solid #e14eca; }
   .main-panel > .content {
-    padding: 78px 30px 10px 180px;
+    padding: 78px 30px 10px 280px;
     min-height:auto; }
     /*  calc(100vh - 70px); */
   .main-panel > .navbar {
