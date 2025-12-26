@@ -254,8 +254,8 @@ const configco2 = {
   "relativeGaugeSize": true,
   "gaugeWidthScale": 0.8,
   "gaugeColor": "#1e1e2f",
-  "valueFontColor": "#777777ff",
-  "labelFontColor": "#555454ff",
+  "valueFontColor": "#bdbdbdff",
+  "labelFontColor": "#787878ff",
   "levelColors": [
     "rgba(0, 214, 180, 1)"
   ],
@@ -302,8 +302,8 @@ const configph = {
   "relativeGaugeSize": true,
   "gaugeWidthScale": 0.8,
   "gaugeColor": "#1e1e2f",
-  "valueFontColor": "#777777ff",
-  "labelFontColor": "#555454ff",
+  "valueFontColor": "#bdbdbdff",
+  "labelFontColor": "#787878ff",
   "levelColors": [
     "rgba(0, 214, 180, 1)"
   ],
@@ -350,8 +350,8 @@ const configTemperature = {
   "relativeGaugeSize": true,
   "gaugeWidthScale": 0.8,
   "gaugeColor": "#1e1e2f",
-  "valueFontColor": "#777777ff",
-  "labelFontColor": "#555454ff",
+  "valueFontColor": "#bdbdbdff",
+  "labelFontColor": "#787878ff",
   "levelColors": [
     "rgba(0, 214, 180, 1)"
   ],
@@ -399,8 +399,8 @@ const configLuminosity = {
   "relativeGaugeSize": true,
   "gaugeWidthScale": 0.8,
   "gaugeColor": "#1e1e2f",
-  "valueFontColor": "#777777ff",
-  "labelFontColor": "#555454ff",
+  "valueFontColor": "#bdbdbdff",
+  "labelFontColor": "#787878ff",
   "levelColors": [
     "rgba(0, 214, 180, 1)"
   ],
