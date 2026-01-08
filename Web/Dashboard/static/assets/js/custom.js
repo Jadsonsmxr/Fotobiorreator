@@ -1,4 +1,77 @@
+const socket = io("http://127.0.0.1:5000", { transports: ["websocket"] });
 
+socket.on("connect", () => {
+  console.log("WebSocket conectado");
+});
+
+socket.on("co2", (valor) => {
+  // console.log("CO2 recebido:", valor);
+  
+  if (window.gaugeCo2) {
+    window.gaugeCo2.refresh(valor);
+  }
+
+  
+});
+
+socket.on("ph", (valor) => {
+  
+  if (window.gaugePh) {
+      window.gaugePh.refresh(valor);
+    }
+
+});
+
+socket.on("temperature", (valor) => {
+  
+  if (window.gaugeTemperature) {
+      window.gaugeTemperature.refresh(valor);
+    }
+
+});
+
+socket.on("luminosity", (valor) => {
+  
+  if (window.gaugeLuminosity) {
+      window.gaugeLuminosity.refresh(valor);
+    }       
+
+});
+
+socket.on("co2_total", (valor) => {
+  
+  if (window.elementoCo2Total) {
+      window.elementoCo2Total.innerText = `${valor.toFixed(1)} kg`;
+    }
+
+});
+
+socket.on("efficiency", (valor) => {
+  
+  if (window.elementoEfficiency) {
+      window.elementoEfficiency.innerText = `${valor.toFixed(1)} %`;
+    }
+
+});
+
+socket.on("co2_monthly", (valor) => {
+  
+  if (window.elementoCo2Monthly) {
+      window.elementoCo2Monthly.innerText = `${valor.toFixed(1)} kg`;
+    }
+
+});
+
+socket.on("active_time", (valor) => {
+  
+  if (window.elementoActiveTime) {
+      window.elementoActiveTime.innerText = `${valor} h`;
+    }
+
+});
+
+
+// Apenas o Tooltip Main está sendo usado no momento, os outros são para futuros gráficos
 var gradientChartOptionsConfigurationWithTooltipmain = {
       maintainAspectRatio: false,
 
@@ -434,13 +507,22 @@ const configLuminosity = {
   "shadowSize": 5,
   "shadowVerticalOffset": 3
 }
-
-    const gaugeCo2 = new JustGage(configco2);
-    const gaugeph = new JustGage(configph);
-    const gaugeTemperature = new JustGage(configTemperature);
-    const gaugeLuminosity = new JustGage(configLuminosity);
-
+    // Cria os gauges e armazena em variáveis globais
+    window.gaugeCo2 = new JustGage(configco2);
+    window.gaugePh = new JustGage(configph);
+    window.gaugeTemperature = new JustGage(configTemperature);
+    window.gaugeLuminosity = new JustGage(configLuminosity);
+    // Elementos de KPIs
+    window.elementoCo2Total = document.getElementById("co2-total");
+    window.elementoEfficiency = document.getElementById("efficiency");
+    window.elementoCo2Monthly = document.getElementById("co2-monthly");
+    window.elementoActiveTime = document.getElementById("active-time");
+    //document.getElementById("co2-total").innerText = "80.5 kg"; // Exemplo de atualização do valor total de CO2 removido
     
 
  }
 };
+
+window.onload = function() { 
+  main.initDashboardPageCharts(); // inicializa gauges logo ao carregar a página 
+ };

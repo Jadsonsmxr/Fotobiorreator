@@ -4,6 +4,7 @@ Copyright (c) 2019 - present AppSeed.us
 """
 
 import os
+
 from   flask_migrate import Migrate
 from   flask_minify  import Minify
 from   sys import exit
@@ -11,6 +12,7 @@ from   sys import exit
 from apps.config import config_dict
 from apps import create_app, db
 
+from apps.extensions import socketio
 # WARNING: Don't run with debug turned on in production!
 DEBUG = (os.getenv('DEBUG', 'False') == 'True')
 
@@ -26,6 +28,7 @@ except KeyError:
     exit('Error: Invalid <config_mode>. Expected values [Debug, Production] ')
 
 app = create_app(app_config)
+socketio.init_app(app)
 
 # Create tables & Fallback to SQLite
 with app.app_context():
@@ -55,4 +58,7 @@ if DEBUG:
     app.logger.info('DBMS             = ' + app_config.SQLALCHEMY_DATABASE_URI)
 
 if __name__ == "__main__":
-    app.run()
+    # app.run()
+    from apps.websocket import start_websocket_test
+    start_websocket_test(socketio)
+    socketio.run(app, host="127.0.0.1", port=5000, debug=True, use_reloader=False)
