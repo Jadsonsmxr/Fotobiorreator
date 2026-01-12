@@ -77,6 +77,32 @@ class Users(db.Model, UserMixin):
             raise IntegrityError(error, 422)
         return
 
+class Sensor(db.Model):
+    __tablename__ = 'sensors'
+
+    id            = db.Column(db.Integer, primary_key=True)
+    name          = db.Column(db.String(50), nullable=False)
+    type          = db.Column(db.String(20), nullable=False)
+    unit          = db.Column(db.String(10), nullable=False)
+    created_at    = db.Column(db.DateTime, server_default=db.func.now())
+
+    user_id       = db.Column(db.Integer, db.ForeignKey("users.id"))
+    user          = db.relationship("Users", backref=db.backref("sensors"))
+
+class SensorReading(db.Model):
+    __tablename__ = "sensor_readings"
+
+    id = db.Column(db.Integer, primary_key=True)
+    value = db.Column(db.Float, nullable=False)
+    timestamp = db.Column(db.DateTime, default=db.func.now(), index=True)
+
+    sensor_id = db.Column(db.Integer, db.ForeignKey("sensors.id"), index=True)
+    sensor = db.relationship("Sensor", backref="readings")
+
+
+
+
+
 @login_manager.user_loader
 def user_loader(id):
     return Users.query.filter_by(id=id).first()

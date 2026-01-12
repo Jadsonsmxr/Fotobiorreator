@@ -8,14 +8,18 @@ from flask import Flask
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 from importlib import import_module
+from flask_migrate import Migrate
+
 
 db = SQLAlchemy()
 login_manager = LoginManager()
+migrate = Migrate()
+
 
 def register_extensions(app):
     db.init_app(app)
     login_manager.init_app(app)
-
+    migrate.init_app(app, db)
 def register_blueprints(app):
     for module_name in ('authentication', 'home', 'dyn_dt', 'charts', ):
         module = import_module('apps.{}.routes'.format(module_name))
@@ -43,3 +47,4 @@ def create_app(config):
     app.register_blueprint(github_blueprint, url_prefix="/login")    
     app.register_blueprint(google_blueprint, url_prefix="/login")    
     return app
+import apps.authentication.models
