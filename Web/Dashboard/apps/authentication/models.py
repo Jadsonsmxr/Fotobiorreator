@@ -11,6 +11,8 @@ from flask_dance.consumer.storage.sqla import OAuthConsumerMixin
 from apps import db, login_manager
 from apps.authentication.util import hash_pass
 
+from sqlalchemy.sql import func
+
 class Users(db.Model, UserMixin):
 
     __tablename__ = 'users'
@@ -94,7 +96,7 @@ class SensorReading(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     value = db.Column(db.Float, nullable=False)
-    timestamp = db.Column(db.DateTime, default=db.func.now(), index=True)
+    timestamp = db.Column(db.DateTime(timezone=True), server_default=func.now(), index=True)
 
     sensor_id = db.Column(db.Integer, db.ForeignKey("sensors.id"), index=True)
     sensor = db.relationship("Sensor", backref="readings")

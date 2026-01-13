@@ -1,0 +1,555 @@
+# -*- encoding: utf-8 -*-
+"""
+Copyright (c) 2019 - present AppSeed.us
+"""
+
+import os
+
+from   flask_migrate import Migrate
+from   flask_minify  import Minify
+from   sys import exit
+
+from apps.config import config_dict
+from apps import create_app, db
+
+from apps.extensions import socketio
+# WARNING: Don't run with debug turned on in production!
+DEBUG = (os.getenv('DEBUG', 'False') == 'True')
+
+# The configuration
+get_config_mode = 'Debug' if DEBUG else 'Production'
+
+try:
+
+    # Load the configuration using the default values
+    app_config = config_dict[get_config_mode.capitalize()]
+
+except KeyError:
+    exit('Error: Invalid <config_mode>. Expected values [Debug, Production] ')
+
+app = create_app(app_config)
+socketio.init_app(app)
+
+# Create tables & Fallback to SQLite
+with app.app_context():
+    
+    try:
+        db.create_all()
+    except Exception as e:
+
+        print('> Error: DBMS Exception: ' + str(e) )
+
+        # fallback to SQLite
+        basedir = os.path.abspath(os.path.dirname(__file__))
+        app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'db.sqlite3')
+
+        print('> Fallback to SQLite ')
+        db.create_all()
+
+# Apply all changes
+Migrate(app, db)
+
+if not DEBUG:
+    Minify(app=app, html=True, js=False, cssless=False)
+    
+if DEBUG:
+    app.logger.info('DEBUG            = ' + str(DEBUG)             )
+    app.logger.info('Page Compression = ' + 'FALSE' if DEBUG else 'TRUE' )
+    app.logger.info('DBMS             = ' + app_config.SQLALCHEMY_DATABASE_URI)
+
+if __name__ == "__main__":
+    # app.run()
+    from apps.websocket import start_websocket_test
+    start_websocket_test(socketio)
+    socketio.run(app, debug=True)
+
+codigo 2 
+
+import threading
+import time
+import random
+
+def start_websocket_test(socketio):
+
+    def send_data():
+        while True:
+            valor = random.randint(350, 480)
+            socketio.emit("co2", valor)
+            time.sleep(2)
+
+    thread = threading.Thread(target=send_data)
+    thread.daemon = True
+    thread.start()
+codigo 3 
+
+from flask_socketio import SocketIO
+
+socketio = SocketIO(cors_allowed_origins="*")
+
+codigo 4 
+const socket = io();
+
+socket.on("connect", () => {
+  console.log("WebSocket conectado");
+});
+
+socket.on("co2", (valor) => {
+  console.log("CO2 recebido:", valor);
+  console.log("GaugeCo2:", window.gaugeCo2);
+  if (window.gaugeCo2) {
+    window.gaugeCo2.refresh(valor);
+  }
+});
+
+
+var gradientChartOptionsConfigurationWithTooltipmain = {
+      maintainAspectRatio: false,
+
+      scales: { 
+        yAxes: [{
+            id: 'y-axis-0',
+            display: true,
+            ticks: {
+                min: 200,
+                max: 500,
+                stepSize: 25,
+            },
+        }]
+    
+        },
+
+
+      legend: { display: false },
+
+      tooltips: {
+        backgroundColor: '#f5f5f5',
+        titleFontColor: '#333',
+        bodyFontColor: '#666',
+        bodySpacing: 4,
+        xPadding: 12,
+        mode: "nearest",
+        intersect: 0,
+        position: "nearest"
+      },
+      responsive: true,
+
+      annotation: {
+        annotations: [{
+            type: 'line',
+            mode: 'horizontal',
+            scaleID: 'y-axis-0',
+            value: 350,
+            borderColor: '#4dff50ff',
+            borderWidth: 1,
+            label: {
+                enabled: true,
+                content: 'Limite seguro',
+                position: "top",  
+                yAdjust: -10, 
+                backgroundColor: "rgba(0, 0, 0, 0.2)"
+                
+            }
+        }]
+    },
+
+    };
+
+
+    var gradientChartOptionsConfigurationWithTooltipco2 = {
+      maintainAspectRatio: false,
+
+      scales: { 
+        yAxes: [{
+            id: 'y-axis-0',
+            display: true,
+            ticks: {
+                min: 300,
+                max: 500,
+                stepSize: 25,
+            },
+        }]
+    
+        },
+
+
+      legend: { display: false },
+
+      tooltips: {
+        backgroundColor: '#f5f5f5',
+        titleFontColor: '#333',
+        bodyFontColor: '#666',
+        bodySpacing: 4,
+        xPadding: 12,
+        mode: "nearest",
+        intersect: 0,
+        position: "nearest"
+      },
+      responsive: true,
+
+
+    };
+
+     var gradientChartOptionsConfigurationWithTooltippH = {
+      maintainAspectRatio: false,
+
+      scales: { 
+        yAxes: [{
+            id: 'y-axis-0',
+            display: true,
+            ticks: {
+                min: 0,
+                max: 14,
+                stepSize: 1,
+            },
+        }]
+    
+        },
+
+
+      legend: { display: false },
+
+      tooltips: {
+        backgroundColor: '#f5f5f5',
+        titleFontColor: '#333',
+        bodyFontColor: '#666',
+        bodySpacing: 4,
+        xPadding: 12,
+        mode: "nearest",
+        intersect: 0,
+        position: "nearest"
+      },
+      responsive: true,
+
+
+    };
+
+     var gradientChartOptionsConfigurationWithTooltipTemperature = {
+      maintainAspectRatio: false,
+
+      scales: { 
+        yAxes: [{
+            id: 'y-axis-0',
+            display: true,
+            ticks: {
+                min: 200,
+                max: 500,
+                stepSize: 25,
+            },
+        }]
+    
+        },
+
+
+      legend: { display: false },
+
+      tooltips: {
+        backgroundColor: '#f5f5f5',
+        titleFontColor: '#333',
+        bodyFontColor: '#666',
+        bodySpacing: 4,
+        xPadding: 12,
+        mode: "nearest",
+        intersect: 0,
+        position: "nearest"
+      },
+      responsive: true,
+
+
+    };
+
+     var gradientChartOptionsConfigurationWithTooltipLuminosity = {
+      maintainAspectRatio: false,
+
+      scales: { 
+        yAxes: [{
+            id: 'y-axis-0',
+            display: true,
+            ticks: {
+                min: 200,
+                max: 500,
+                stepSize: 25,
+            },
+        }]
+    
+        },
+
+
+      legend: { display: false },
+
+      tooltips: {
+        backgroundColor: '#f5f5f5',
+        titleFontColor: '#333',
+        bodyFontColor: '#666',
+        bodySpacing: 4,
+        xPadding: 12,
+        mode: "nearest",
+        intersect: 0,
+        position: "nearest"
+      },
+      responsive: true,
+
+
+    };
+
+
+
+   
+
+
+
+
+main = {
+
+
+
+    createLineChart: function(canvasId, labels, dataset_label, data, color, options, pR = 3, fill = false) {
+    var ctx = document.getElementById(canvasId).getContext('2d');
+
+    return new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: dataset_label,
+          data: data,
+          borderColor: color,
+          pointBackgroundColor: color,
+          backgroundColor: color.replace('1)', '0.13)'),
+          borderWidth: 2,
+          pointRadius: pR,
+          fill: fill
+        }]
+      },
+      options: options
+    })
+    },
+  
+
+
+ initDashboardPageCharts: function () {
+    // dados fictícios para exemplo - eixo x
+
+    var chart_labels_Quinzenal_main = ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15'];
+    var chart_labels_5min_co2 = ['12:00','12:05','12:10','12:15','12:20','12:25','12:30','12:35','12:40','12:45','12:50','12:55'];
+    
+    // dados fictícios para exemplo - eixo y
+
+    var chart_data_Quinzenal_main = [ 425,420,416,411,407,402,398,393,389,384,379,373,368,360,350];
+    var chart_data_5min_co2 = [422,421,419,420,418,417,415,414,412,411,409,408]
+    var chart_data_5min_pH = [7,7,7,7,7,7,7,7,7,7,7,7]
+
+
+    this.createLineChart("chartBig1", chart_labels_Quinzenal_main, 'CO2', chart_data_Quinzenal_main, 'rgba(0, 214, 180, 1)', gradientChartOptionsConfigurationWithTooltipmain, 3 ,true)
+    // this.createLineChart("chartCo2", chart_labels_5min_co2, 'CO2', chart_data_5min_co2, 'rgba(0, 214, 68, 1)', gradientChartOptionsConfigurationWithTooltipco2, 0)
+    // this.createLineChart("chartpH", chart_labels_5min_co2, 'pH', chart_data_5min_pH, 'rgba(214, 0, 180, 1)', gradientChartOptionsConfigurationWithTooltippH)
+    // this.createLineChart("chartTemperature", chart_labels_5min_co2, 'Temperatura', chart_data_5min_co2, 'rgba(214, 180, 0, 1)', gradientChartOptionsConfigurationWithTooltipTemperature)
+    // this.createLineChart("chartLuminosity", chart_labels_5min_co2, 'Luminosidade', chart_data_5min_co2, 'rgba(255, 255, 255, 1)', gradientChartOptionsConfigurationWithTooltipLuminosity)
+
+const configco2 = {
+  "id": "gaugeco2",
+  "value": 445,
+  "min": 200,
+  "max": 500,
+  "decimals": 1,
+  "symbol": "",
+  "reverse": false,
+  
+  "relativeGaugeSize": true,
+  "gaugeWidthScale": 0.8,
+  "gaugeColor": "#1e1e2f",
+  "valueFontColor": "#bdbdbdff",
+  "labelFontColor": "#787878ff",
+  "levelColors": [
+    "rgba(0, 214, 180, 1)"
+  ],
+  "noGradient": false,
+  "showSectorColors": false,
+  "title": "",
+  "titleFontColor": "#cb1313ff",
+  "titleFontFamily": "Arial",
+  "titleFontWeight": "bold",
+  "titlePosition": "above",
+  "label": "ppm",
+  "minTxt": "",
+  "maxTxt": "",
+  "hideValue": false,
+  "hideMinMax": false,
+  "humanFriendly": false,
+  "formatNumber": false,
+  "donut": false,
+  "donutStartAngle": 90,
+  "differential": false,
+  "displayRemaining": false,
+  "pointer": false,
+  "targetLineColor": "#000000",
+  "targetLineWidth": 1.5,
+  "startAnimationTime": 700,
+  "startAnimationType": ">",
+  "refreshAnimationTime": 700,
+  "counter": false,
+  "showInnerShadow": true,
+  "shadowOpacity": 0.2,
+  "shadowSize": 5,
+  "shadowVerticalOffset": 3
+}
+
+const configph = {
+  "id": "gaugeph",
+  "value": 7.4383517856623955,
+  "min": 0,
+  "max": 14,
+  "decimals": 1,
+  "symbol": "",
+  "reverse": false,
+  
+  "relativeGaugeSize": true,
+  "gaugeWidthScale": 0.8,
+  "gaugeColor": "#1e1e2f",
+  "valueFontColor": "#bdbdbdff",
+  "labelFontColor": "#787878ff",
+  "levelColors": [
+    "rgba(0, 214, 180, 1)"
+  ],
+  "noGradient": false,
+  "showSectorColors": false,
+  "title": "",
+  "titleFontColor": "#cb1313ff",
+  "titleFontFamily": "Arial",
+  "titleFontWeight": "bold",
+  "titlePosition": "above",
+  
+  "minTxt": "",
+  "maxTxt": "",
+  "hideValue": false,
+  "hideMinMax": false,
+  "humanFriendly": false,
+  "formatNumber": false,
+  "donut": false,
+  "donutStartAngle": 90,
+  "differential": false,
+  "displayRemaining": false,
+  "pointer": false,
+  "targetLineColor": "#000000",
+  "targetLineWidth": 1.5,
+  "startAnimationTime": 700,
+  "startAnimationType": ">",
+  "refreshAnimationTime": 700,
+  "counter": false,
+  "showInnerShadow": true,
+  "shadowOpacity": 0.2,
+  "shadowSize": 5,
+  "shadowVerticalOffset": 3
+}
+
+const configTemperature = {
+  "id": "gaugeTemperature",
+  "value": 32,
+  "min": 20,
+  "max": 40,
+  "decimals": 1,
+  "symbol": "",
+  "reverse": false,
+  
+  "relativeGaugeSize": true,
+  "gaugeWidthScale": 0.8,
+  "gaugeColor": "#1e1e2f",
+  "valueFontColor": "#bdbdbdff",
+  "labelFontColor": "#787878ff",
+  "levelColors": [
+    "rgba(0, 214, 180, 1)"
+  ],
+  "noGradient": false,
+  "showSectorColors": false,
+  "title": "",
+  "titleFontColor": "#cb1313ff",
+  "titleFontFamily": "Arial",
+  "titleFontWeight": "bold",
+  "titlePosition": "above",
+  "label": "°C",
+  
+  "minTxt": "",
+  "maxTxt": "",
+  "hideValue": false,
+  "hideMinMax": false,
+  "humanFriendly": false,
+  "formatNumber": false,
+  "donut": false,
+  "donutStartAngle": 90,
+  "differential": false,
+  "displayRemaining": false,
+  "pointer": false,
+  "targetLineColor": "#000000",
+  "targetLineWidth": 1.5,
+  "startAnimationTime": 700,
+  "startAnimationType": ">",
+  "refreshAnimationTime": 700,
+  "counter": false,
+  "showInnerShadow": true,
+  "shadowOpacity": 0.2,
+  "shadowSize": 5,
+  "shadowVerticalOffset": 3
+}
+
+const configLuminosity = {
+  "id": "gaugeLuminosity",
+  "value": 712,
+  "min": 0,
+  "max": 1000,
+  "decimals": 1,
+  "symbol": "",
+  "reverse": false,
+  
+  "relativeGaugeSize": true,
+  "gaugeWidthScale": 0.8,
+  "gaugeColor": "#1e1e2f",
+  "valueFontColor": "#bdbdbdff",
+  "labelFontColor": "#787878ff",
+  "levelColors": [
+    "rgba(0, 214, 180, 1)"
+  ],
+  "noGradient": false,
+  "showSectorColors": false,
+  "title": "",
+  "titleFontColor": "#cb1313ff",
+  "titleFontFamily": "Arial",
+  "titleFontWeight": "bold",
+  "titlePosition": "above",
+  "label": "lux",
+  "minTxt": "",
+  "maxTxt": "",
+  "hideValue": false,
+  "hideMinMax": false,
+  "humanFriendly": false,
+  "formatNumber": false,
+  "donut": false,
+  "donutStartAngle": 90,
+  "differential": false,
+  "displayRemaining": false,
+  "pointer": false,
+  "targetLineColor": "#000000",
+  "targetLineWidth": 1.5,
+  "startAnimationTime": 700,
+  "startAnimationType": ">",
+  "refreshAnimationTime": 700,
+  "counter": false,
+  "showInnerShadow": true,
+  "shadowOpacity": 0.2,
+  "shadowSize": 5,
+  "shadowVerticalOffset": 3
+}
+
+    window.gaugeCo2 = new JustGage(configco2);
+    const gaugeph = new JustGage(configph);
+    const gaugeTemperature = new JustGage(configTemperature);
+    const gaugeLuminosity = new JustGage(configLuminosity);
+
+    
+
+ }
+};
+
+window.onload = function() { 
+  main.initDashboardPageCharts(); // inicializa gauges logo ao carregar a página 
+ };
+
+

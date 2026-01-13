@@ -13,6 +13,8 @@ from apps.config import config_dict
 from apps import create_app, db
 
 from apps.extensions import socketio
+
+from apps.mqtt.client import start_mqtt
 # WARNING: Don't run with debug turned on in production!
 DEBUG = (os.getenv('DEBUG', 'False') == 'True')
 
@@ -56,9 +58,11 @@ if DEBUG:
     app.logger.info('DEBUG            = ' + str(DEBUG)             )
     app.logger.info('Page Compression = ' + 'FALSE' if DEBUG else 'TRUE' )
     app.logger.info('DBMS             = ' + app_config.SQLALCHEMY_DATABASE_URI)
-
+# Start MQTT Client
+start_mqtt(app)
 if __name__ == "__main__":
     # app.run()
     from apps.websocket import start_websocket_test
     start_websocket_test(socketio)
     socketio.run(app, host="127.0.0.1", port=5000, debug=True, use_reloader=False)
+    

@@ -6,7 +6,9 @@
 	],
 	"settings": {
 		"conventionalCommits.scopes": [
-			"realtime"
+			"realtime",
+			"database",
+			"mqtt"
 		]
 	}
 }
