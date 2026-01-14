@@ -2,10 +2,12 @@ import json
 import paho.mqtt.client as mqtt
 from flask import current_app
 from apps.services.sensor_service import SensorService
+from apps.extensions import socketio
 
 MQTT_BROKER = "localhost"
 MQTT_PORT = 1883
 MQTT_TOPIC = "sensors/+/data"
+
 
 
 def on_connect(client, userdata, flags, rc):
@@ -29,6 +31,11 @@ def on_message(client, userdata, msg):
             sensor_id=sensor_id,
             value=value
         )
+        
+
+       
+
+
 
 
 def start_mqtt(app):

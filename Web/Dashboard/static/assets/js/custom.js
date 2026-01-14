@@ -1,74 +1,44 @@
-const socket = io("http://127.0.0.1:5000", { transports: ["websocket"] });
+const socket = io("http://127.0.0.1:5000", {
+  transports: ["websocket"]
+});
+
+function updateGauge(sensorKey, value) {
+  switch(sensorKey) {
+    case "CO2 Interno":
+      window.gaugeCo2?.refresh(value);  //continuar nos outros gauges
+      break;
+    case "CO2 Externo":
+      // Se houver um gauge para CO2 Externo, atualize aqui
+      break;
+    case "pH":
+      window.gaugePh?.refresh(value);
+      break;
+    case "Temperatura Interno":
+      window.gaugeTemperature?.refresh(value);
+      break;
+    case "Luminosidade":
+      window.gaugeLuminosity?.refresh(value);
+      break;
+    default:
+      console.warn("Sensor desconhecido:", sensorKey);
+  }
+}
+
+
 
 socket.on("connect", () => {
   console.log("WebSocket conectado");
 });
 
-socket.on("co2", (valor) => {
-  // console.log("CO2 recebido:", valor);
-  
-  if (window.gaugeCo2) {
-    window.gaugeCo2.refresh(valor);
-  }
 
-  
+socket.on("sensor_update", (data) => {
+    //console.log("Atualização recebida:", data);
+    //console.log("Atualização recebida:", data.sensor_key, data.value);
+
+    // Exemplo: atualizar KPI ou gauge
+    updateGauge(data.sensor_key, data.value);
 });
 
-socket.on("ph", (valor) => {
-  
-  if (window.gaugePh) {
-      window.gaugePh.refresh(valor);
-    }
-
-});
-
-socket.on("temperature", (valor) => {
-  
-  if (window.gaugeTemperature) {
-      window.gaugeTemperature.refresh(valor);
-    }
-
-});
-
-socket.on("luminosity", (valor) => {
-  
-  if (window.gaugeLuminosity) {
-      window.gaugeLuminosity.refresh(valor);
-    }       
-
-});
-
-socket.on("co2_total", (valor) => {
-  
-  if (window.elementoCo2Total) {
-      window.elementoCo2Total.innerText = `${valor.toFixed(1)} kg`;
-    }
-
-});
-
-socket.on("efficiency", (valor) => {
-  
-  if (window.elementoEfficiency) {
-      window.elementoEfficiency.innerText = `${valor.toFixed(1)} %`;
-    }
-
-});
-
-socket.on("co2_monthly", (valor) => {
-  
-  if (window.elementoCo2Monthly) {
-      window.elementoCo2Monthly.innerText = `${valor.toFixed(1)} kg`;
-    }
-
-});
-
-socket.on("active_time", (valor) => {
-  
-  if (window.elementoActiveTime) {
-      window.elementoActiveTime.innerText = `${valor} h`;
-    }
-
-});
 
 
 // Apenas o Tooltip Main está sendo usado no momento, os outros são para futuros gráficos

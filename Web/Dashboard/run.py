@@ -30,7 +30,7 @@ except KeyError:
     exit('Error: Invalid <config_mode>. Expected values [Debug, Production] ')
 
 app = create_app(app_config)
-socketio.init_app(app)
+
 
 # Create tables & Fallback to SQLite
 # with app.app_context():
@@ -59,10 +59,15 @@ if DEBUG:
     app.logger.info('Page Compression = ' + 'FALSE' if DEBUG else 'TRUE' )
     app.logger.info('DBMS             = ' + app_config.SQLALCHEMY_DATABASE_URI)
 # Start MQTT Client
-start_mqtt(app)
+
 if __name__ == "__main__":
+    socketio.init_app(app)
     # app.run()
-    from apps.websocket import start_websocket_test
-    start_websocket_test(socketio)
+    # from apps.websocket import start_websocket_test
+    # start_websocket_test(socketio)
+
+    start_mqtt(app)
+    from apps.websocket import emitir_periodicamente
+    socketio.start_background_task(emitir_periodicamente, app)
     socketio.run(app, host="127.0.0.1", port=5000, debug=True, use_reloader=False)
     
