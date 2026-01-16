@@ -24,6 +24,7 @@
 from apps.extensions import socketio
 from apps.services.sensor_service import SensorService
 from apps.authentication.models import Sensor
+from apps.services.kpi_service import KPIService
 
 def emitir_periodicamente(app):
     with app.app_context():
@@ -40,5 +41,14 @@ def emitir_periodicamente(app):
                             "timestamp": leitura.timestamp.isoformat()
                         },
                         namespace="/"
-                    )
+                        )   
+                    kpis = KPIService.get_kpis()
+
+                    if kpis:
+                        socketio.emit(
+                            "kpi_update",
+                            kpis,
+                            namespace="/"
+                            )
+                    
             socketio.sleep(5)  # espera 5 segundos antes de repetir

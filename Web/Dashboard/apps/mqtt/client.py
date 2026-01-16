@@ -1,8 +1,7 @@
 import json
 import paho.mqtt.client as mqtt
-from flask import current_app
 from apps.services.sensor_service import SensorService
-from apps.extensions import socketio
+
 
 MQTT_BROKER = "localhost"
 MQTT_PORT = 1883
