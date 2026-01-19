@@ -10,7 +10,8 @@
 			"database",
 			"mqtt",
 			"kpi",
-			"deps"
+			"deps",
+			"structure"
 		]
 	}
 }
