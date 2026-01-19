@@ -9,7 +9,8 @@
 			"realtime",
 			"database",
 			"mqtt",
-			"kpi"
+			"kpi",
+			"deps"
 		]
 	}
 }
