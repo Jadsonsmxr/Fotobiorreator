@@ -1,0 +1,8 @@
+Esse é um codigo para o funcionamento da tela 
+
+Para funcionar será necessario, inserir dentro da lib, que pode ser achada em .pio/libdeps/ os arquivos:
+
+- lv_conf.h
+
+a biblioteca do gfx deve ser uma versão inferior, ou seja, a que deu certo até o momento é a 1.3.7
+ obs: a lib tft_eSPI não é necessária.

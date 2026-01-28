@@ -1,5 +1,6 @@
 #pragma once
-#include <Wire.h>
-#include <Adafruit_ADS1X15.h>
+
+
+extern float ph_act;
 void sensorPH_Setup();
 void sensorPH_Loop();

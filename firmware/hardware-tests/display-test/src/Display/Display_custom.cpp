@@ -32,7 +32,7 @@ void ui_custom_update_values(float temp, float ph, float co2) {
     //ui_chartline_layout_update();
     // --- Temperatura ---
     if (!std::isnan(temp)) lastTemp = temp;
-    sprintf(buffer, "%.0f", lastTemp);
+    sprintf(buffer, "%.1f", lastTemp);
     lv_label_set_text(objects.data_temperatura, buffer);
     lv_arc_set_value(objects.arc_temperatura, (int)(lastTemp));
     //lv_chart_set_next_value(objects.chart_temp, serTemp, lastTemp);

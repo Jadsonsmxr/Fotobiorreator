@@ -3834,7 +3834,8 @@ static int32_t anim_callback_get_width(lv_anim_t * a) { return lv_obj_get_width(
 static void anim_callback_set_height(void *obj, int32_t v) { lv_obj_set_height((lv_obj_t *)obj, v); }
 static int32_t anim_callback_get_height(lv_anim_t * a) { return lv_obj_get_height((lv_obj_t *)a->user_data); }
 static void anim_callback_set_opacity(void *obj, int32_t v) { lv_obj_set_style_opa((lv_obj_t *)obj, v, 0); }
-static int32_t anim_callback_get_opacity(lv_anim_t * a) { return lv_obj_get_style_opa((lv_obj_t *)a->user_data, 0); }
+// static int32_t anim_callback_get_opacity(lv_anim_t * a) { return lv_obj_get_style_opa((lv_obj_t *)a->user_data, 0); }
+static int32_t anim_callback_get_opacity(lv_anim_t * a) { return lv_obj_get_style_opa((lv_obj_t *)a->user_data, LV_PART_MAIN); }
 static void anim_callback_set_image_zoom(void *obj, int32_t v) { lv_img_set_zoom((lv_obj_t *)obj, v); }
 static int32_t anim_callback_get_image_zoom(lv_anim_t * a) { return lv_img_get_zoom((lv_obj_t *)a->user_data); }
 static void anim_callback_set_image_angle(void *obj, int32_t v) { lv_img_set_angle((lv_obj_t *)obj, v); }
@@ -4401,7 +4402,8 @@ ACTION_START(objSetStyleOpa)
 ACTION_END
 ACTION_START(objGetStyleOpa)
     WIDGET_PROP(obj);
-    int32_t opa = (int32_t)lv_obj_get_style_opa(obj, 0);
+    // int32_t opa = (int32_t)lv_obj_get_style_opa(obj, 0);
+    int32_t opa = (int32_t)lv_obj_get_style_opa(obj, LV_PART_MAIN);
     RESULT(result, Value((int)opa, VALUE_TYPE_INT32));
 ACTION_END
 ACTION_START(objAddStyle)

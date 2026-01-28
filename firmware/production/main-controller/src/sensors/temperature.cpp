@@ -1,7 +1,7 @@
 #include <DallasTemperature.h>
 #include <OneWire.h>
 
-
+float temperature = 0.0; // Variavel global para armazenar a temperatura lida
 
 const int PINO_ONEWIRE = 14; // Define pino do sensor
 OneWire oneWire(PINO_ONEWIRE); // Cria um objeto OneWire
@@ -9,7 +9,7 @@ DallasTemperature sensor(&oneWire); // Informa a referencia da biblioteca dallas
 DeviceAddress endereco_temp; // Cria um endereco temporario da leitura do sensor
 
 void sensorTemperature_Setup() {
-  Serial.begin(115200); // Inicia a porta serial
+  //Serial.begin(115200); // Inicia a porta serial
   Serial.println("Medindo Temperatura"); // Imprime a mensagem inicial
   sensor.begin(); ; // Inicia o sensor
 }
@@ -19,8 +19,9 @@ void sensorTemperature_Loop() {
   if (!sensor.getAddress(endereco_temp,0)) { // Encontra o endereco do sensor no barramento
     Serial.println("SENSOR NAO CONECTADO"); // Sensor conectado, imprime mensagem de erro
   } else {
-    Serial.print("Temperatura = "); // Imprime a temperatura no monitor serial
-    Serial.println(sensor.getTempC(endereco_temp), 1); // Busca temperatura para dispositivo
+    //Serial.print("Temperatura = "); // Imprime a temperatura no monitor serial
+    //Serial.println(sensor.getTempC(endereco_temp), 1); 
+    temperature = sensor.getTempC(endereco_temp, 1); // Busca temperatura para dispositivo
   }
   delay(1000);
 }
