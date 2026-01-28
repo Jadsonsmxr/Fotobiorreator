@@ -7,10 +7,12 @@
 #include <sensors/co2.h>
 #include <sensors/co2calibration.h>
 #include <espnow/espnow.h>
+#include <mqtt/mqtt.h>
 // put function declarations here:
 // int teste = 1;
 Adafruit_ADS1115 ads;
 
+//falta colocar para funcionar o sensor de co2
 
 void setup() {
   
@@ -18,11 +20,19 @@ void setup() {
   
   Serial.println("Iniciando sistema...");
   Wire.begin();
+
+  WiFi.mode(WIFI_STA);
+  delay(100);
   
-  sensorPH_Setup();
-  sensorTemperature_Setup();
+  mqtt_setup();
+  //espnow_setup();
+
+  //sensorPH_Setup();
+  //sensorTemperature_Setup();
   //sensorLight_Setup();
-  espnow_setup();
+  
+  
+  
   //sensorCO2_Setup();
   //calibrationCo2();
     
@@ -30,12 +40,14 @@ void setup() {
 }
 
 void loop() {
- 
- sensorPH_Loop();
- sensorTemperature_Loop();
+  mqtt_loop();
+  //espnow_loop();
+  
+  //sensorPH_Loop();
+  //sensorTemperature_Loop();
   //sensorLight_Loop();
- espnow_loop();
+ 
   //sensorCO2_Loop(); 
-delay(10);
+
 
 }

@@ -147,8 +147,8 @@ void sendTopic(const char *topic, float value) {
 void espnow_setup() {
   
   
-  WiFi.mode(WIFI_MODE_STA);
-  delay(100);
+  // WiFi.mode(WIFI_MODE_STA);
+  // delay(100);
   Serial.print("Meu MAC: ");
   Serial.println(WiFi.macAddress());
 
