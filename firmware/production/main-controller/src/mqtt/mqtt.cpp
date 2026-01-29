@@ -8,6 +8,16 @@ const char* BROKER_MQTT = "test.mosquitto.org";
 const int BROKER_PORT = 1883;
 const char* ID_MQTT = "esp32_mqtt_fotobiorreator_cba";
 
+const char* NAMESPACE = "cba_fotobiorreator";
+
+// IDs dos sensores (devem existir no banco de dados do servidor)
+const int SENSOR_ID_CO2_INTERNO = 1;     // CO2 Interno
+const int SENSOR_ID_CO2_EXTERNO = 2;     // CO2 Externo
+const int SENSOR_ID_TEMP_INTERNO = 3;   // Temperatura Interno
+const int SENSOR_ID_PH = 4;              // pH
+const int SENSOR_ID_LUMINOSIDADE = 5;    // Luminosidade
+
+
 WiFiClient wifiClient;
 PubSubClient MQTT(wifiClient);
 
@@ -56,11 +66,46 @@ void mantemConexoes() {
   
 }
 
+// Função para publicar no formato JSON com ID numérico
+void publicarSensor(int sensor_id, float value) {
+  // Cria documento JSON
+  StaticJsonDocument<200> doc;
+  doc["sensor_id"] = sensor_id;  // ID numérico do banco
+  doc["value"] = value;
+  
+  // Serializa para string
+  char jsonBuffer[256];
+  serializeJson(doc, jsonBuffer);
+  
+  // Monta o tópico: namespace/sensors/{sensor_id}/data
+  char topic[100];
+  snprintf(topic, sizeof(topic), "%s/sensors/%d/data", NAMESPACE, sensor_id);
+  
+  // Publica
+  if (MQTT.publish(topic, jsonBuffer)) {
+    Serial.print("[");
+    Serial.print(topic);
+    Serial.print("] ");
+    Serial.println(jsonBuffer);
+  } else {
+    Serial.println("Erro ao publicar MQTT");
+  }
+}
+
 void mqtt_setup() {
     conectaWiFi();
     MQTT.setServer(BROKER_MQTT, BROKER_PORT);
-  
+    MQTT.setBufferSize(512);
     conectaMQTT();
+
+    Serial.println("\n========== CONFIGURAÇÃO MQTT ==========");
+  Serial.print("Namespace: ");
+  Serial.println(NAMESPACE);
+  Serial.println("\nTópicos configurados:");
+  Serial.println("- " + String(NAMESPACE) + "/sensors/3/data  → Temperatura");
+  Serial.println("- " + String(NAMESPACE) + "/sensors/4/data  → pH");
+  Serial.println("- " + String(NAMESPACE) + "/sensors/1/data  → CO2 Interno");
+  Serial.println("=======================================\n");
 }
 
 void mqtt_loop() {
@@ -76,15 +121,17 @@ void mqtt_loop() {
   if (now - lastSend >= interval) {
     lastSend = now;
     
-    switch(step) {
+      switch(step) {
       case 0:
-        MQTT.publish("temp_ftb_cba", String(temperature).c_str());
+        
+        //publicarSensor(SENSOR_ID_CO2_INTERNO, co2_mqtt);
         break;
       case 1:
-        MQTT.publish("ph_ftb_cba", String(ph_act).c_str());
+        publicarSensor(SENSOR_ID_TEMP_INTERNO, temperature);
+        
         break;
       case 2:
-        //MQTT.publish("co2_ftb_cba", String(co2_mqtt).c_str());
+        publicarSensor(SENSOR_ID_PH, ph_act);
         break;
       case 3:
         step = 0;
