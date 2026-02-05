@@ -17,9 +17,17 @@ void sensorLight_Setup(){
 }
 
 void sensorLight_Loop() {
-  float lux = lightMeter.readLightLevel();
-  Serial.print("Luz: ");
-  Serial.print(lux);
-  Serial.println(" lx");
-  delay(1000);
+  static unsigned long lastRead = 0;
+  const unsigned long interval = 2000;
+
+  unsigned long now = millis();
+
+  if (now - lastRead >= interval) {
+    lastRead = now;
+
+    float lux = lightMeter.readLightLevel();
+    Serial.print("Luz: ");
+    Serial.print(lux);
+    Serial.println(" lx");
+  }
 }
