@@ -85,6 +85,7 @@
 #include <esp_now.h>
 #include <WiFi.h>
 #include <Display/Display_custom.h>
+#include "esp_wifi.h"
 
 uint8_t peerAddress[] = { 0x24, 0x6F, 0x28, 0x77, 0xF1, 0x14 };
 
@@ -126,6 +127,7 @@ void onEspNowRecv(const uint8_t *mac, const uint8_t *data, int len) {
 void init_communication() {
   WiFi.mode(WIFI_MODE_STA);
   delay(100);
+  esp_wifi_set_channel(6, WIFI_SECOND_CHAN_NONE);
   Serial.print("Meu MAC: ");
   Serial.println(WiFi.macAddress());
 
@@ -136,7 +138,7 @@ void init_communication() {
 
   esp_now_peer_info_t peerInfo = {};
   memcpy(peerInfo.peer_addr, peerAddress, 6);
-  peerInfo.channel = 0;
+  peerInfo.channel = 6;
   peerInfo.encrypt = false;
   peerInfo.ifidx = WIFI_IF_STA;
 

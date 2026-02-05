@@ -107,6 +107,9 @@
 #include <sensors/temperature.h>
 #include <sensors/ph.h>
 #include <sensors/light.h>
+#include <esp_wifi.h>
+#include <main.h>
+
 
 uint8_t peerAddress[] = { 0x64, 0xE8, 0x33, 0x44, 0xB9, 0xA4 };
 
@@ -114,6 +117,12 @@ extern float temperature;
 extern float ph_act;  // usar extern quando tiver o sensor de pH
 extern float lux;
 float co2 = 415;  // usar extern quando tiver o sensor de CO2
+
+
+
+
+
+
 
 typedef struct {
   char topic[16];
@@ -149,8 +158,15 @@ void espnow_setup() {
   
   // WiFi.mode(WIFI_MODE_STA);
   // delay(100);
+
+  // if (wifiChannel <= 0) {
+  // Serial.println("ERRO: wifiChannel invalido");
+  // return;
+  // }
+
   Serial.print("Meu MAC: ");
   Serial.println(WiFi.macAddress());
+  //esp_wifi_set_channel(wifiChannel, WIFI_SECOND_CHAN_NONE);
 
   if (esp_now_init() != ESP_OK) {
     Serial.println("Erro ao iniciar ESP-NOW");
@@ -159,7 +175,7 @@ void espnow_setup() {
 
   esp_now_peer_info_t peerInfo = {};
   memcpy(peerInfo.peer_addr, peerAddress, 6);
-  peerInfo.channel = 0;
+  peerInfo.channel = WIFI_ESPNOW_CHANNEL;
   peerInfo.encrypt = false;
   peerInfo.ifidx = WIFI_IF_STA;
 
@@ -178,7 +194,7 @@ void espnow_loop() {
   static uint8_t step = 0;
   //aqui é possivel configurar os intervalos de envio
   unsigned long now = millis();
-  unsigned long interval = (step == 3) ? 4000 : 600;
+  unsigned long interval = (step == 3) ? 2000 : 600;
   
   if (now - lastSend >= interval) {
     lastSend = now;
