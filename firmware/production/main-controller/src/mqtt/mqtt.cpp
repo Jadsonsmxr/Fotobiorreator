@@ -1,9 +1,18 @@
-#include "mqtt/mqtt.h"
+#include <WiFi.h>
+#include <PubSubClient.h>
+#include <ArduinoJson.h>
+#include <sensors/temperature.h>
+#include <sensors/ph.h>
+#include <sensors/co2.h>
+#include <esp_wifi.h>
+#include <sensors/light.h>
+#include <main.h>
+
 
 
 // DEFINIÇÕES das variáveis (apenas aqui!)
-const char* SSID = "NPN-CBA";
-const char* PASSWORD = "cba12345";
+const char* SSID = "Jadson";
+const char* PASSWORD = "12345678*";
 const char* BROKER_MQTT = "test.mosquitto.org";
 const int BROKER_PORT = 1883;
 const char* ID_MQTT = "esp32_mqtt_fotobiorreator_cba";
@@ -21,39 +30,70 @@ const int SENSOR_ID_LUMINOSIDADE = 5;    // Luminosidade
 WiFiClient wifiClient;
 PubSubClient MQTT(wifiClient);
 
+int wifiChannel = 0;
+
 float co2_mqtt = 400.0; //valor inicial do CO2
 
 void conectaWiFi() {
+  static unsigned long lastTry = 0;
+  static bool canalCapturado = false;
+  
+  if (WiFi.status() != WL_CONNECTED) {
+    canalCapturado = false;
+  }
+
+
   if (WiFi.status() == WL_CONNECTED) {
+    if (!canalCapturado) {
+      wifiChannel = WiFi.channel();
+      Serial.print("Conectado com IP: ");
+      Serial.println(WiFi.localIP());
+      Serial.print("Canal WiFi capturado: ");
+      Serial.println(wifiChannel);
+      canalCapturado = true;
+    }
+    
     return;
   }
+  if (millis() - lastTry < 5000) {
+    return; // tenta conectar a cada 10 segundos
+  }
+  lastTry = millis();
 
   Serial.print("Conectando na rede: ");
   Serial.println(SSID);
+  //esp_wifi_set_channel(WIFI_CHANNEL, WIFI_SECOND_CHAN_NONE);
+  WiFi.begin(SSID, PASSWORD, WIFI_ESPNOW_CHANNEL);
 
-  WiFi.begin(SSID, PASSWORD);
+  // while (WiFi.status() != WL_CONNECTED) {
+  //   delay(100);
+  //   Serial.print(".");
+  // }
 
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(100);
-    Serial.print(".");
-  }
-
-  Serial.println();
-  Serial.print("Conectado com IP: ");
-  Serial.println(WiFi.localIP());
+  
 }
 
 void conectaMQTT() {
-  while (!MQTT.connected()) {
-    Serial.print("Conectando no broker MQTT: ");
-    Serial.println(BROKER_MQTT);
+static unsigned long lastTry = 0; 
 
-    if (MQTT.connect(ID_MQTT)) {
-      Serial.println("Conectado ao broker MQTT!");
-    } else {
-      Serial.println("Falha na conexão. Tentando novamente em 10 segundos.");
-      delay(10000);
-    }
+  if (MQTT.connected()) {
+    return;
+  }
+  if (millis() - lastTry < 5000) {
+    return; // tenta conectar a cada 10 segundos
+  }
+  lastTry = millis();
+
+  //while (!MQTT.connected()) {
+  Serial.print("Conectando no broker MQTT: ");
+  Serial.println(BROKER_MQTT);
+
+  if (MQTT.connect(ID_MQTT)) {
+    Serial.println("Conectado ao broker MQTT!");
+  } else {
+    Serial.println("Falha na conexão. Tentando novamente em 10 segundos.");
+     // delay(10000);
+    //}
   }
 }
 
@@ -69,7 +109,7 @@ void mantemConexoes() {
 // Função para publicar no formato JSON com ID numérico
 void publicarSensor(int sensor_id, float value) {
   // Cria documento JSON
-  StaticJsonDocument<200> doc;
+  JsonDocument doc;
   doc["sensor_id"] = sensor_id;  // ID numérico do banco
   doc["value"] = value;
   
@@ -94,6 +134,10 @@ void publicarSensor(int sensor_id, float value) {
 
 void mqtt_setup() {
     conectaWiFi();
+
+    
+
+
     MQTT.setServer(BROKER_MQTT, BROKER_PORT);
     MQTT.setBufferSize(512);
     conectaMQTT();
