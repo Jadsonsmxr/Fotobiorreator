@@ -157,31 +157,37 @@ void mqtt_loop() {
   MQTT.loop();
 
   static unsigned long lastSend = 0;
-  static uint8_t step = 0;
+  //static uint8_t step = 0;
   //aqui é possivel configurar os intervalos de envio
   unsigned long now = millis();
-  unsigned long interval = (step == 3) ? 4000 : 600;
+  //unsigned long interval = (step == 3) ? 4000 : 600;
+  unsigned long interval = 2000;
   
   if (now - lastSend >= interval) {
     lastSend = now;
+
+    //publicarSensor(SENSOR_ID_CO2_INTERNO, co2_mqtt);
+    publicarSensor(SENSOR_ID_TEMP_INTERNO, temperature);
+    publicarSensor(SENSOR_ID_PH, ph_act);
+    publicarSensor(SENSOR_ID_LUMINOSIDADE, luminosidade);
     
-      switch(step) {
-      case 0:
+    //   switch(step) {
+    //   case 0:
         
-        //publicarSensor(SENSOR_ID_CO2_INTERNO, co2_mqtt);
-        break;
-      case 1:
-        publicarSensor(SENSOR_ID_TEMP_INTERNO, temperature);
+    //     //publicarSensor(SENSOR_ID_CO2_INTERNO, co2_mqtt);
+    //     break;
+    //   case 1:
+    //     publicarSensor(SENSOR_ID_TEMP_INTERNO, temperature);
         
-        break;
-      case 2:
-        publicarSensor(SENSOR_ID_PH, ph_act);
-        break;
-      case 3:
-        step = 0;
-        return;
-    }
-    step++;
+    //     break;
+    //   case 2:
+    //     publicarSensor(SENSOR_ID_PH, ph_act);
+    //     break;
+    //   case 3:
+    //     step = 0;
+    //     return;
+    // }
+    // step++;
   }
 
 

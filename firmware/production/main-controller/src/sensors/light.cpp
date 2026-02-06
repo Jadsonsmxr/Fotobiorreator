@@ -2,7 +2,7 @@
 #include <BH1750.h>
 
 BH1750 lightMeter;
-
+float luminosidade = 0.0;
 void sensorLight_Setup(){
  // Serial.begin(115200);
 
@@ -25,9 +25,9 @@ void sensorLight_Loop() {
   if (now - lastRead >= interval) {
     lastRead = now;
 
-    float lux = lightMeter.readLightLevel();
+    luminosidade = lightMeter.readLightLevel();
     Serial.print("Luz: ");
-    Serial.print(lux);
+    Serial.print(luminosidade);
     Serial.println(" lx");
   }
 }

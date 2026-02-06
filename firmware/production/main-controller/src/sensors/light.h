@@ -1,5 +1,5 @@
 #pragma once
 
-extern float lux;
+extern float luminosidade;
 void sensorLight_Setup();
 void sensorLight_Loop();
