@@ -1,3 +1,4 @@
+
 $(document).ready(function() {
     $().ready(function() {
         $sidebar = $('.sidebar');
@@ -102,12 +103,14 @@ $(document).ready(function() {
             $('body').addClass('white-content');
             localStorage.setItem("light_color", "true");
             $('.switch input').prop("checked", false)
+            updateGaugeColors();
         });
 
         $('.dark-badge').click(function() {
             $('body').removeClass('white-content');
             localStorage.setItem("light_color", "false");
             $('.switch input').prop("checked", true)
+            updateGaugeColors();
         });
     });
 });
@@ -121,7 +124,9 @@ $(document).ready(function () {
     } else {
         $('.switch input').prop("checked", true)
     }
-
+    setTimeout(function() {
+        updateGaugeColors(); // ← ADICIONE AQUI
+    }, 1000);
 
     $('.switch input').on("change", function () {
         light_color = localStorage.getItem("light_color");
@@ -133,6 +138,7 @@ $(document).ready(function () {
             setTimeout(function () {
                 $('body').removeClass('change-background');
                 $('body').removeClass('white-content');
+                updateGaugeColors();
             }, 400);
 
         } else {
@@ -142,6 +148,7 @@ $(document).ready(function () {
             setTimeout(function () {
                 $('body').removeClass('change-background');
                 $('body').addClass('white-content');
+                updateGaugeColors();
             }, 400);
         }
     });
