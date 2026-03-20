@@ -6,3 +6,4 @@ void conectaMQTT();
 void mantemConexoes();
 void mqtt_setup();
 void mqtt_loop();
+void mqtt_disconnect();
