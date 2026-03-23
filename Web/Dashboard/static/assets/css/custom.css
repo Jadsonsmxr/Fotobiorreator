@@ -7,9 +7,11 @@
 
 }
 .main-panel {
-  border-top:2px solid #03b653;
+  border-top:3px solid #03b653;
   
 }
+
+
 
 
 
@@ -30,6 +32,7 @@
 .KPI .card-body .card-title{
     margin-bottom: 5px;
     color: rgba(255, 255, 255, 0.6);
+    
 }
 
 .KPI .color-co2total {
@@ -46,11 +49,20 @@
 
 
 
-.card-body .chart-area #gauge {
-    width: 100%;
-    height: 200px;
+
+
+.card-body {
+    padding-top: 13px !important;
+    padding-bottom: 13px !important;
 }
 
 .KPI .color-watch-time {
     color: #4dabf7 !important;
+}
+
+
+.card-chart .chart-area {
+    min-height: 220px;
+    height: auto;
+   
 }
