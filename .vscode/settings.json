@@ -1,0 +1,6 @@
+{
+    "python.defaultInterpreterPath": "${workspaceFolder}/dashboard/.venv/bin/python",
+    "conventionalCommits.scopes": [
+        "web"
+    ]
+}

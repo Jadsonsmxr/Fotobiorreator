@@ -1,0 +1,1091 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Image Recognition {% endblock %}
+
+{% block stylesheets %}
+<style>
+  .img-rec-page .hero-card,
+  .img-rec-page .result-card,
+  .img-rec-page .support-card {
+    height: 100%;
+  }
+
+  .img-rec-page .hero-copy {
+    margin-bottom: 1.5rem;
+  }
+
+  .img-rec-page .hero-kicker,
+  .img-rec-page .section-kicker {
+    display: inline-block;
+    margin-bottom: 0.75rem;
+    padding: 0.35rem 0.75rem;
+    border: 1px solid rgba(0, 242, 195, 0.18);
+    border-radius: 999px;
+    color: #00f2c3;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: rgba(0, 242, 195, 0.08);
+  }
+
+  .img-rec-page .hero-copy p,
+  .img-rec-page .support-card p {
+    color: rgba(255, 255, 255, 0.66);
+  }
+
+  .img-rec-page .upload-zone {
+    position: relative;
+    border: 2px dashed rgba(0, 242, 195, 0.2);
+    border-radius: 0.75rem;
+    padding: 2rem 1.25rem;
+    text-align: center;
+    background:
+      linear-gradient(180deg, rgba(0, 242, 195, 0.08), rgba(46, 204, 113, 0.05));
+    transition: border-color 0.2s ease, transform 0.2s ease, background 0.2s ease;
+    overflow: hidden;
+  }
+
+  .img-rec-page .upload-zone:hover,
+  .img-rec-page .upload-zone.drag-over {
+    border-color: rgba(0, 242, 195, 0.65);
+    background:
+      linear-gradient(180deg, rgba(0, 242, 195, 0.12), rgba(46, 204, 113, 0.08));
+    transform: translateY(-1px);
+  }
+
+  .img-rec-page .upload-zone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .img-rec-page .upload-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 72px;
+    margin-bottom: 1rem;
+    border-radius: 50%;
+    background: rgba(0, 242, 195, 0.1);
+    color: #00f2c3;
+    font-size: 2rem;
+  }
+
+  .img-rec-page .upload-zone p {
+    margin-bottom: 0.25rem;
+  }
+
+  .img-rec-page .upload-meta,
+  .img-rec-page .helper-text,
+  .img-rec-page .result-meta {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.78rem;
+  }
+
+  .img-rec-page .preview-wrap {
+    display: none;
+    margin-top: 0;
+  }
+
+  .img-rec-page .preview-wrap.is-visible {
+    display: block;
+  }
+
+  .img-rec-page .preview-panel {
+    margin-bottom: 1.5rem;
+  }
+
+  .img-rec-page .preview-frame {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 320px;
+    padding: 1rem;
+    border-radius: 0.9rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.015)),
+      radial-gradient(circle at top, rgba(0, 242, 195, 0.08), transparent 55%);
+    overflow: hidden;
+  }
+
+  .img-rec-page .preview-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.52);
+  }
+
+  .img-rec-page .preview-empty.is-hidden {
+    display: none;
+  }
+
+  .img-rec-page .preview-empty i {
+    font-size: 2rem;
+    color: rgba(0, 242, 195, 0.7);
+  }
+
+  .img-rec-page .preview-img {
+    width: 100%;
+    height: 100%;
+    max-height: 420px;
+    border-radius: 0.75rem;
+    object-fit: contain;
+    object-position: center;
+    border: 0;
+  }
+
+  .img-rec-page .preview-caption {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 0.75rem;
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  .img-rec-page .actions-row {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+
+  .img-rec-page .analyze-btn {
+    width: 100%;
+    min-width: 0;
+    border: 1px solid rgba(0, 242, 195, 0.28);
+    background: linear-gradient(135deg, #03b653 0%, #00d6b4 100%) !important;
+    background-image: linear-gradient(135deg, #03b653 0%, #00d6b4 100%) !important;
+    background-color: #03b653 !important;
+    color: #ffffff !important;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    box-shadow: 0 10px 24px rgba(3, 182, 83, 0.18);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+  }
+
+  .img-rec-page .analyze-btn:hover:not(:disabled),
+  .img-rec-page .analyze-btn:focus:not(:disabled),
+  .img-rec-page .analyze-btn:active:not(:disabled),
+  .img-rec-page .analyze-btn.active:not(:disabled) {
+    background: linear-gradient(135deg, #14c95f 0%, #00f2c3 100%) !important;
+    background-image: linear-gradient(135deg, #14c95f 0%, #00f2c3 100%) !important;
+    background-color: #14c95f !important;
+    border-color: rgba(0, 242, 195, 0.46) !important;
+    transform: translateY(-1px);
+    color: #ffffff !important;
+    box-shadow: 0 14px 28px rgba(0, 242, 195, 0.18);
+  }
+
+  .img-rec-page .analyze-btn:active:not(:disabled) {
+    background: linear-gradient(135deg, #029347 0%, #00b892 100%) !important;
+    background-image: linear-gradient(135deg, #029347 0%, #00b892 100%) !important;
+    background-color: #029347 !important;
+    border-color: rgba(0, 242, 195, 0.36) !important;
+    transform: translateY(0);
+    color: #ffffff !important;
+  }
+
+  .img-rec-page .analyze-btn:disabled {
+    background: linear-gradient(135deg, rgba(52, 70, 117, 0.55), rgba(39, 41, 61, 0.85)) !important;
+    background-image: linear-gradient(135deg, rgba(52, 70, 117, 0.55), rgba(39, 41, 61, 0.85)) !important;
+    background-color: rgba(39, 41, 61, 0.85) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    color: rgba(255, 255, 255, 0.45) !important;
+    box-shadow: none;
+  }
+
+  .img-rec-page .loading-box {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 0.85rem;
+  }
+
+  .img-rec-page .loading-box.is-visible {
+    display: inline-flex;
+  }
+
+  .img-rec-page .spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.16);
+    border-top-color: #00f2c3;
+    border-radius: 50%;
+    animation: img-rec-spin 0.8s linear infinite;
+  }
+
+  .img-rec-page .status-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .img-rec-page .support-divider {
+    margin: 1.5rem 0;
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .img-rec-page .status-badge::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  .img-rec-page .status-list {
+    padding-left: 1rem;
+    margin-bottom: 0;
+    color: rgba(255, 255, 255, 0.62);
+  }
+
+  .img-rec-page .status-list li + li {
+    margin-top: 0.5rem;
+  }
+
+  .img-rec-page .result-card {
+    display: none;
+  }
+
+  .img-rec-page .result-card.is-visible {
+    display: block;
+  }
+
+  .img-rec-page .result-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .img-rec-page .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.65rem 1rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .img-rec-page .badge-baixa {
+    color: #86efac;
+    background: rgba(134, 239, 172, 0.14);
+    border: 1px solid rgba(134, 239, 172, 0.32);
+  }
+
+  .img-rec-page .badge-media {
+    color: #4ade80;
+    background: rgba(74, 222, 128, 0.14);
+    border: 1px solid rgba(74, 222, 128, 0.32);
+  }
+
+  .img-rec-page .badge-alta {
+    color: #00f2c3;
+    background: rgba(0, 242, 195, 0.14);
+    border: 1px solid rgba(0, 242, 195, 0.32);
+  }
+
+  .img-rec-page .badge-sedim {
+    color: #ff8d72;
+    background: rgba(255, 141, 114, 0.14);
+    border: 1px solid rgba(255, 141, 114, 0.32);
+  }
+
+  .img-rec-page .confidence-value {
+    font-size: 1.8rem;
+    font-weight: 600;
+    line-height: 1;
+    color: #ffffff;
+    text-align: right;
+  }
+
+  .img-rec-page .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .img-rec-page .metric-box {
+    padding: 1rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .img-rec-page .metric-label {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 0.45rem;
+  }
+
+  .img-rec-page .metric-value {
+    color: #ffffff;
+    font-size: 1.05rem;
+    font-weight: 600;
+  }
+
+  .img-rec-page .probability-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+  }
+
+  .img-rec-page .probability-row {
+    display: grid;
+    grid-template-columns: 110px 1fr 56px;
+    align-items: center;
+    gap: 0.85rem;
+  }
+
+  .img-rec-page .probability-label,
+  .img-rec-page .probability-value {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .img-rec-page .probability-track {
+    height: 10px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .img-rec-page .probability-bar {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #03b653, #00f2c3);
+  }
+
+  .img-rec-page .labeling-box {
+    margin-top: 1.75rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .img-rec-page .labeling-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    margin-top: 1rem;
+  }
+
+  .img-rec-page .retrain-btn {
+    border-color: rgba(0, 242, 195, 0.24);
+    color: #00f2c3;
+    background: rgba(0, 242, 195, 0.08);
+  }
+
+  .img-rec-page .retrain-btn:hover:not(:disabled),
+  .img-rec-page .retrain-btn:focus:not(:disabled) {
+    border-color: rgba(0, 242, 195, 0.4);
+    color: #ffffff;
+    background: linear-gradient(135deg, rgba(3, 182, 83, 0.92), rgba(0, 214, 180, 0.92));
+  }
+
+  .img-rec-page .class-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin: 1rem 0;
+  }
+
+  .img-rec-page .class-btn {
+    padding: 0.65rem 1rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.03);
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: 0.2s ease;
+  }
+
+  .img-rec-page .class-btn:hover,
+  .img-rec-page .class-btn.is-selected {
+    border-color: rgba(0, 242, 195, 0.4);
+    color: #00f2c3;
+    background: rgba(0, 242, 195, 0.1);
+  }
+
+  .img-rec-page .feedback-box {
+    display: none;
+    margin-top: 1rem;
+    padding: 0.85rem 1rem;
+    border-radius: 0.65rem;
+    font-size: 0.85rem;
+  }
+
+  .img-rec-page .feedback-box.is-visible {
+    display: block;
+  }
+
+  .img-rec-page .feedback-box.is-error {
+    color: #ff6b6b;
+    background: rgba(255, 107, 107, 0.12);
+    border: 1px solid rgba(255, 107, 107, 0.28);
+  }
+
+  .img-rec-page .feedback-box.is-success {
+    color: #1fda9c;
+    background: rgba(31, 218, 156, 0.12);
+    border: 1px solid rgba(31, 218, 156, 0.26);
+  }
+
+  .white-content .img-rec-page .hero-kicker,
+  .white-content .img-rec-page .section-kicker {
+    border-color: rgba(3, 182, 83, 0.18);
+    color: #03b653;
+    background: rgba(3, 182, 83, 0.08);
+  }
+
+  .white-content .img-rec-page .hero-copy p,
+  .white-content .img-rec-page .support-card p,
+  .white-content .img-rec-page .helper-text,
+  .white-content .img-rec-page .result-meta,
+  .white-content .img-rec-page .status-list,
+  .white-content .img-rec-page .probability-label,
+  .white-content .img-rec-page .probability-value,
+  .white-content .img-rec-page .preview-caption {
+    color: rgba(34, 42, 66, 0.68);
+  }
+
+  .white-content .img-rec-page .upload-zone {
+    border-color: rgba(3, 182, 83, 0.22);
+    background: linear-gradient(180deg, rgba(3, 182, 83, 0.08), rgba(0, 242, 195, 0.05));
+  }
+
+  .white-content .img-rec-page .upload-zone:hover,
+  .white-content .img-rec-page .upload-zone.drag-over {
+    border-color: rgba(3, 182, 83, 0.42);
+    background: linear-gradient(180deg, rgba(3, 182, 83, 0.12), rgba(0, 242, 195, 0.08));
+  }
+
+  .white-content .img-rec-page .upload-icon {
+    background: rgba(3, 182, 83, 0.1);
+    color: #03b653;
+  }
+
+  .white-content .img-rec-page .crop-field label,
+  .white-content .img-rec-page .metric-label {
+    color: rgba(34, 42, 66, 0.5);
+  }
+
+  .white-content .img-rec-page .loading-box {
+    color: rgba(34, 42, 66, 0.72);
+  }
+
+  .white-content .img-rec-page .preview-img,
+  .white-content .img-rec-page .metric-box {
+    border-color: rgba(52, 70, 117, 0.12);
+  }
+
+  .white-content .img-rec-page .preview-frame {
+    border-color: rgba(52, 70, 117, 0.12);
+    background:
+      linear-gradient(180deg, rgba(52, 70, 117, 0.04), rgba(52, 70, 117, 0.02)),
+      radial-gradient(circle at top, rgba(3, 182, 83, 0.08), transparent 58%);
+  }
+
+  .white-content .img-rec-page .preview-empty {
+    color: rgba(34, 42, 66, 0.5);
+  }
+
+  .white-content .img-rec-page .preview-empty i {
+    color: rgba(3, 182, 83, 0.72);
+  }
+
+  .white-content .img-rec-page .metric-box,
+  .white-content .img-rec-page .probability-track {
+    background: rgba(52, 70, 117, 0.05);
+  }
+
+  .white-content .img-rec-page .metric-value,
+  .white-content .img-rec-page .confidence-value {
+    color: #222a42;
+  }
+
+  .white-content .img-rec-page .labeling-box {
+    border-top-color: rgba(52, 70, 117, 0.12);
+  }
+
+  .white-content .img-rec-page .retrain-btn {
+    border-color: rgba(3, 182, 83, 0.22);
+    color: #04994a;
+    background: rgba(3, 182, 83, 0.06);
+  }
+
+  .white-content .img-rec-page .retrain-btn:hover:not(:disabled),
+  .white-content .img-rec-page .retrain-btn:focus:not(:disabled) {
+    border-color: rgba(3, 182, 83, 0.34);
+    color: #ffffff;
+    background: linear-gradient(135deg, #04994a 0%, #00c9a7 100%);
+  }
+
+  .white-content .img-rec-page .support-divider {
+    border-color: rgba(52, 70, 117, 0.12);
+  }
+
+  .white-content .img-rec-page .class-btn {
+    border-color: rgba(52, 70, 117, 0.12);
+    background: rgba(52, 70, 117, 0.04);
+    color: rgba(34, 42, 66, 0.74);
+  }
+
+  .white-content .img-rec-page .class-btn:hover,
+  .white-content .img-rec-page .class-btn.is-selected {
+    border-color: rgba(3, 182, 83, 0.3);
+    color: #03b653;
+    background: rgba(3, 182, 83, 0.08);
+  }
+
+  .white-content .img-rec-page .analyze-btn {
+    border-color: rgba(3, 182, 83, 0.22) !important;
+    background: linear-gradient(135deg, #04994a 0%, #00c9a7 100%) !important;
+    background-image: linear-gradient(135deg, #04994a 0%, #00c9a7 100%) !important;
+    background-color: #04994a !important;
+    color: #ffffff !important;
+    box-shadow: 0 10px 22px rgba(3, 182, 83, 0.14);
+  }
+
+  .white-content .img-rec-page .analyze-btn:hover:not(:disabled),
+  .white-content .img-rec-page .analyze-btn:focus:not(:disabled),
+  .white-content .img-rec-page .analyze-btn:active:not(:disabled),
+  .white-content .img-rec-page .analyze-btn.active:not(:disabled) {
+    background: linear-gradient(135deg, #18c55d 0%, #22e7c0 100%) !important;
+    background-image: linear-gradient(135deg, #18c55d 0%, #22e7c0 100%) !important;
+    background-color: #18c55d !important;
+    border-color: rgba(3, 182, 83, 0.34) !important;
+    box-shadow: 0 14px 26px rgba(3, 182, 83, 0.16);
+    color: #ffffff !important;
+  }
+
+  .white-content .img-rec-page .analyze-btn:active:not(:disabled) {
+    background: linear-gradient(135deg, #027c3b 0%, #00b08f 100%) !important;
+    background-image: linear-gradient(135deg, #027c3b 0%, #00b08f 100%) !important;
+    background-color: #027c3b !important;
+    border-color: rgba(3, 182, 83, 0.3) !important;
+    color: #ffffff !important;
+  }
+
+  .white-content .img-rec-page .analyze-btn:disabled {
+    background: linear-gradient(135deg, rgba(173, 181, 189, 0.65), rgba(206, 212, 218, 0.9)) !important;
+    background-image: linear-gradient(135deg, rgba(173, 181, 189, 0.65), rgba(206, 212, 218, 0.9)) !important;
+    background-color: rgba(206, 212, 218, 0.9) !important;
+    border-color: rgba(52, 70, 117, 0.08) !important;
+    color: rgba(34, 42, 66, 0.38) !important;
+    box-shadow: none;
+  }
+
+  .white-content .img-rec-page .feedback-box.is-error {
+    color: #d92d20;
+    background: rgba(217, 45, 32, 0.1);
+    border-color: rgba(217, 45, 32, 0.22);
+  }
+
+  .white-content .img-rec-page .feedback-box.is-success {
+    color: #087f5b;
+    background: rgba(8, 127, 91, 0.1);
+    border-color: rgba(8, 127, 91, 0.2);
+  }
+
+  @keyframes img-rec-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @media (max-width: 991.98px) {
+    .img-rec-page .metrics-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 767.98px) {
+    .img-rec-page .metrics-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .img-rec-page .actions-row,
+    .img-rec-page .result-top {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .img-rec-page .probability-row {
+      grid-template-columns: 1fr;
+      gap: 0.45rem;
+    }
+
+    .img-rec-page .confidence-value {
+      text-align: left;
+    }
+
+    .img-rec-page .preview-frame {
+      min-height: 240px;
+      padding: 0.75rem;
+    }
+
+    .img-rec-page .preview-caption {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="content img-rec-page">
+  <div class="row">
+    <div class="col-12 col-xl-7">
+      <div class="card hero-card">
+        <div class="card-header">
+          <span class="hero-kicker">Reconhecimento de Imagem</span>
+          <h2 class="card-title mb-0">Classificação de biomassa por imagem</h2>
+        </div>
+        <div class="card-body">
+          <div class="hero-copy">
+            <p class="mb-0">
+              Envie uma imagem do fotobiorreator e execute a análise diretamente pelo dashboard,
+              sem sair do ambiente de monitoramento.
+            </p>
+          </div>
+
+          <div class="upload-zone" id="drop-zone">
+            <input type="file" id="file-input" accept="image/*">
+            <span class="upload-icon">
+              <i class="tim-icons icon-camera-18"></i>
+            </span>
+            <p><strong>Selecione ou arraste</strong> uma imagem do PBR</p>
+            <p class="upload-meta mb-0">JPEG ou PNG • imagens feitas pelo celular também funcionam</p>
+          </div>
+
+          <p class="helper-text mt-3 mb-0">
+            A imagem enviada será processada integralmente pelo classificador integrado ao dashboard.
+          </p>
+
+          <div class="actions-row">
+            <button class="btn analyze-btn" id="analyze-btn" disabled>
+              Analisar biomassa
+            </button>
+            <div class="loading-box" id="loading-box">
+              <span class="spinner"></span>
+              <span id="loading-text">Processando imagem...</span>
+            </div>
+          </div>
+
+          <div class="feedback-box" id="feedback-box"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-xl-5">
+      <div class="card support-card">
+        <div class="card-header">
+          <span class="section-kicker">Pré-visualização</span>
+          <h3 class="card-title mb-0">Visualização da imagem</h3>
+        </div>
+        <div class="card-body">
+          <div class="preview-panel">
+            <div class="preview-frame">
+              <div class="preview-empty" id="preview-empty">
+                <i class="tim-icons icon-camera-18"></i>
+                <div>
+                  <strong>Pré-visualização da imagem</strong>
+                  <p class="mb-0 mt-1">A imagem selecionada aparecerá inteira aqui, sem cortes.</p>
+                </div>
+              </div>
+
+              <div class="preview-wrap" id="preview-wrap">
+                <img class="preview-img" id="preview-img" src="" alt="Preview da imagem enviada">
+              </div>
+            </div>
+
+            <div class="preview-caption">
+              <span id="preview-name">Nenhum arquivo selecionado</span>
+              <span id="preview-size"></span>
+            </div>
+          </div>
+
+          <hr class="support-divider">
+
+          <div class="status-panel">
+            <p class="mb-0">
+              Use esta área para conferir a imagem antes de iniciar a análise.
+            </p>
+            <ol class="status-list">
+              <li>Selecione ou arraste uma imagem do fotobiorreator.</li>
+              <li>Revise a pré-visualização antes de iniciar a análise.</li>
+              <li>Execute a classificação e acompanhe o resultado logo abaixo.</li>
+            </ol>
+            <p class="result-meta mb-0">
+              A imagem é exibida integralmente para facilitar a validação visual antes do envio.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <div class="card result-card" id="result-card">
+        <div class="card-header">
+          <span class="section-kicker">Resultado</span>
+          <h3 class="card-title mb-0">Classificação retornada pelo modelo</h3>
+        </div>
+        <div class="card-body">
+          <div class="result-top">
+            <div id="status-badge-wrap"></div>
+            <div>
+              <div class="result-meta">Confiança principal</div>
+              <div class="confidence-value" id="confidence-value">--</div>
+            </div>
+          </div>
+
+          <div class="metrics-grid" id="features-grid"></div>
+
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="card-title mb-0">Probabilidades por classe</h4>
+            <span class="result-meta" id="result-id">Amostra: --</span>
+          </div>
+
+          <div class="probability-list" id="prob-bars"></div>
+
+          <div class="labeling-box">
+            <h4 class="card-title">Correção manual do rótulo</h4>
+            <p class="result-meta mb-0">
+              Se a predição estiver incorreta, selecione a classe correta e salve o rótulo para uso supervisionado.
+            </p>
+
+            <div class="class-buttons" id="class-btns">
+              <button class="class-btn" data-class="Baixa" type="button">Baixa</button>
+              <button class="class-btn" data-class="Media" type="button">Media</button>
+              <button class="class-btn" data-class="Alta" type="button">Alta</button>
+              <button class="class-btn" data-class="Sedimentacao" type="button">Sedimentação</button>
+            </div>
+
+            <div class="labeling-actions">
+              <button class="btn btn-info" id="save-label-btn" type="button" disabled>
+                Salvar rótulo manual
+              </button>
+              <button class="btn retrain-btn" id="retrain-btn" type="button">
+                Retreinar modelo
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const API = "/api/biomass-classifier";
+
+    const fileInput = document.getElementById("file-input");
+    const dropZone = document.getElementById("drop-zone");
+    const analyzeBtn = document.getElementById("analyze-btn");
+    const previewWrap = document.getElementById("preview-wrap");
+    const previewEmpty = document.getElementById("preview-empty");
+    const previewImg = document.getElementById("preview-img");
+    const previewName = document.getElementById("preview-name");
+    const previewSize = document.getElementById("preview-size");
+    const loadingBox = document.getElementById("loading-box");
+    const feedbackBox = document.getElementById("feedback-box");
+    const heroCard = document.querySelector(".hero-card");
+    const resultCard = document.getElementById("result-card");
+    const featuresGrid = document.getElementById("features-grid");
+    const probBars = document.getElementById("prob-bars");
+    const statusBadgeWrap = document.getElementById("status-badge-wrap");
+    const confidenceValue = document.getElementById("confidence-value");
+    const resultId = document.getElementById("result-id");
+    const saveLabelBtn = document.getElementById("save-label-btn");
+    const retrainBtn = document.getElementById("retrain-btn");
+    const classButtons = Array.from(document.querySelectorAll(".class-btn"));
+
+    let selectedFile = null;
+    let lastPredictionId = null;
+    let selectedClass = null;
+
+    const classMap = {
+      Baixa: "badge-baixa",
+      Media: "badge-media",
+      Alta: "badge-alta",
+      Sedimentacao: "badge-sedim"
+    };
+
+    const featureLabels = {
+      mean_green_index: { label: "Green index", format: value => Number(value).toFixed(4) },
+      mean_gray: { label: "Gray mean", format: value => Number(value).toFixed(1) },
+      std_color: { label: "Std color", format: value => Number(value).toFixed(2) },
+      mean_hue: { label: "Hue mean", format: value => Number(value).toFixed(1) + "°" }
+    };
+
+    ["dragover", "dragenter"].forEach(eventName => {
+      dropZone.addEventListener(eventName, event => {
+        event.preventDefault();
+        dropZone.classList.add("drag-over");
+      });
+    });
+
+    ["dragleave", "drop"].forEach(eventName => {
+      dropZone.addEventListener(eventName, event => {
+        event.preventDefault();
+        dropZone.classList.remove("drag-over");
+      });
+    });
+
+    dropZone.addEventListener("drop", event => {
+      const file = event.dataTransfer.files[0];
+      if (file) {
+        setFile(file);
+      }
+    });
+
+    fileInput.addEventListener("change", () => {
+      const file = fileInput.files[0];
+      if (file) {
+        setFile(file);
+      }
+    });
+
+    analyzeBtn.addEventListener("click", async () => {
+      if (!selectedFile) {
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("imagem", selectedFile);
+
+      setLoading(true);
+      setFeedback("", "", { scrollTarget: null });
+      scrollToElement(heroCard, "start");
+
+      try {
+        const response = await fetch(`${API}/predict`, {
+          method: "POST",
+          body: formData
+        });
+
+        const payload = await response.json();
+
+        if (!response.ok) {
+          throw new Error(payload.detail || "Erro ao analisar imagem.");
+        }
+
+        renderResult(payload);
+        setFeedback("Análise concluída com sucesso.", "success", { scrollTarget: resultCard });
+      } catch (error) {
+        setFeedback(error.message || "Não foi possível processar a imagem agora.", "error", { scrollTarget: heroCard });
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    classButtons.forEach(button => {
+      button.addEventListener("click", () => {
+        classButtons.forEach(item => item.classList.remove("is-selected"));
+        button.classList.add("is-selected");
+        selectedClass = button.dataset.class;
+        saveLabelBtn.disabled = !lastPredictionId;
+      });
+    });
+
+    saveLabelBtn.addEventListener("click", async () => {
+      if (!lastPredictionId || !selectedClass) {
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("id", lastPredictionId);
+      formData.append("status_real", selectedClass);
+
+      setFeedback("", "");
+
+      try {
+        const response = await fetch(`${API}/labels`, {
+          method: "POST",
+          body: formData
+        });
+
+        const payload = await response.json();
+
+        if (!response.ok) {
+          throw new Error(payload.detail || "Erro ao salvar rótulo.");
+        }
+
+        setFeedback(`Rótulo "${normalizeLabel(selectedClass)}" salvo com sucesso.`, "success", { scrollTarget: heroCard });
+      } catch (error) {
+        setFeedback(error.message || "Não foi possível salvar o rótulo.", "error", { scrollTarget: heroCard });
+      }
+    });
+
+    retrainBtn.addEventListener("click", async () => {
+      retrainBtn.disabled = true;
+      const originalLabel = retrainBtn.textContent;
+      retrainBtn.textContent = "Retreinando...";
+      setFeedback("", "", { scrollTarget: null });
+      scrollToElement(heroCard, "start");
+
+      try {
+        const response = await fetch(`${API}/retrain`, {
+          method: "POST"
+        });
+
+        const payload = await response.json();
+
+        if (!response.ok) {
+          throw new Error(payload.detail || "Erro ao retreinar o modelo.");
+        }
+
+        const totalSamples = payload.amostras ?? 0;
+        setFeedback(`Modelo retreinado com sucesso com ${totalSamples} amostras rotuladas.`, "success", { scrollTarget: heroCard });
+      } catch (error) {
+        setFeedback(error.message || "Não foi possível retreinar o modelo.", "error", { scrollTarget: heroCard });
+      } finally {
+        retrainBtn.disabled = false;
+        retrainBtn.textContent = originalLabel;
+      }
+    });
+
+    function setFile(file) {
+      selectedFile = file;
+      analyzeBtn.disabled = false;
+
+      previewImg.src = URL.createObjectURL(file);
+      previewWrap.classList.add("is-visible");
+      previewEmpty.classList.add("is-hidden");
+      previewName.textContent = file.name;
+      previewSize.textContent = formatBytes(file.size);
+
+      setFeedback("", "");
+    }
+
+    function setLoading(isLoading) {
+      analyzeBtn.disabled = isLoading || !selectedFile;
+      loadingBox.classList.toggle("is-visible", isLoading);
+
+      if (isLoading) {
+        scrollToElement(heroCard, "start");
+      }
+    }
+
+    function setFeedback(message, type, options = {}) {
+      const { scrollTarget = feedbackBox } = options;
+      feedbackBox.className = "feedback-box";
+
+      if (!message) {
+        feedbackBox.textContent = "";
+        return;
+      }
+
+      feedbackBox.textContent = message;
+      feedbackBox.classList.add("is-visible");
+      feedbackBox.classList.add(type === "success" ? "is-success" : "is-error");
+
+      if (scrollTarget) {
+        requestAnimationFrame(() => {
+          scrollToElement(scrollTarget, "start");
+        });
+      }
+    }
+
+    function renderResult(data) {
+      lastPredictionId = data.id || null;
+      selectedClass = null;
+      saveLabelBtn.disabled = true;
+      classButtons.forEach(button => button.classList.remove("is-selected"));
+
+      resultCard.classList.add("is-visible");
+      requestAnimationFrame(() => {
+        scrollToElement(resultCard, "start");
+      });
+
+      const status = data.status || "Sem classe";
+      const normalizedStatus = normalizeLabel(status);
+      const confidence = Number(data.confianca || 0);
+
+      statusBadgeWrap.innerHTML = `
+        <div class="status-badge ${classMap[status] || ""}">
+          ${normalizedStatus}
+        </div>
+      `;
+
+      confidenceValue.textContent = `${(confidence * 100).toFixed(0)}%`;
+      resultId.textContent = `Amostra: ${data.id || "--"}`;
+
+      const features = data.features || {};
+      featuresGrid.innerHTML = Object.entries(featureLabels).map(([key, config]) => `
+        <div class="metric-box">
+          <div class="metric-label">${config.label}</div>
+          <div class="metric-value">${features[key] !== undefined ? config.format(features[key]) : "--"}</div>
+        </div>
+      `).join("");
+
+      const probabilities = Object.entries(data.probabilidades || {}).sort((a, b) => b[1] - a[1]);
+      probBars.innerHTML = probabilities.map(([label, value]) => `
+        <div class="probability-row">
+          <div class="probability-label">${normalizeLabel(label)}</div>
+          <div class="probability-track">
+            <div class="probability-bar" style="width: ${(Number(value) * 100).toFixed(1)}%;"></div>
+          </div>
+          <div class="probability-value">${(Number(value) * 100).toFixed(0)}%</div>
+        </div>
+      `).join("");
+    }
+
+    function normalizeLabel(label) {
+      return label === "Sedimentacao" ? "Sedimentação" : label;
+    }
+
+    function scrollToElement(element, block = "start") {
+      if (!element) {
+        return;
+      }
+
+      element.scrollIntoView({
+        behavior: "smooth",
+        block
+      });
+    }
+
+    function formatBytes(bytes) {
+      if (!bytes) {
+        return "0 B";
+      }
+
+      const units = ["B", "KB", "MB", "GB"];
+      const index = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+      const value = bytes / Math.pow(1024, index);
+      return `${value.toFixed(index === 0 ? 0 : 1)} ${units[index]}`;
+    }
+  });
+</script>
+{% endblock javascripts %}
