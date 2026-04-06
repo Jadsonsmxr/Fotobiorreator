@@ -1,29 +1,40 @@
 # Fotobiorreator Web Dashboard
 
-Aplicação web para monitoramento de um fotobiorreator com autenticação de usuários, persistência de leituras de sensores, ingestão via MQTT e atualização em tempo real do dashboard com Flask-SocketIO.
+Aplicação web para monitoramento de um fotobiorreator com autenticação, ingestão de leituras via MQTT, atualização em tempo real com Socket.IO e um módulo integrado de classificação de biomassa por imagem.
 
-O projeto combina backend em Flask, frontend baseado em Jinja2 + Black Dashboard, banco de dados com SQLAlchemy e uma camada de tempo real para exibição de KPIs e gauges no painel principal.
+O projeto foi construído sobre Flask e Jinja2, usando o tema Black Dashboard como base visual e uma organização modular em `apps/` para separar autenticação, páginas, serviços, MQTT, WebSocket e classificador de biomassa.
 
-## Visão Geral
+## Visão geral
 
-Este projeto foi estruturado para atender um cenário de supervisão operacional de sensores conectados a um fotobiorreator. O backend recebe leituras via MQTT, valida e persiste os dados, e em seguida disponibiliza essas informações ao frontend por WebSocket.
+O sistema atende dois fluxos principais:
 
-Principais capacidades:
+1. monitoramento operacional do fotobiorreator
+- sensores publicam leituras em um broker MQTT;
+- a aplicação consome, valida e persiste essas leituras;
+- o dashboard distribui atualizações em tempo real por Socket.IO.
 
-- autenticação local com login e cadastro de usuários;
-- suporte a OAuth com GitHub e Google;
+2. reconhecimento de biomassa por imagem
+- o usuário envia uma imagem pela página `img_rec`;
+- o backend extrai features da imagem e classifica o estado da biomassa;
+- o resultado pode ser corrigido manualmente e reutilizado em retreino supervisionado.
+
+## Principais capacidades
+
+- login e cadastro de usuários;
+- autenticação social com GitHub e Google;
 - cadastro e persistência de sensores e leituras;
-- atualização em tempo real de sensores e KPIs no dashboard;
-- páginas HTML renderizadas no servidor com Jinja2;
-- pipeline de assets com Vite, Sass e PostCSS;
-- suporte a migrações com Flask-Migrate/Alembic;
-- opção de execução local ou via Docker.
+- dashboard em tempo real com KPIs, gráficos e gauges;
+- reconhecimento de imagem integrado ao próprio dashboard;
+- correção manual de rótulos da biomassa;
+- retreino do classificador a partir de amostras rotuladas;
+- seleção manual de ROI sobre a imagem para restringir a área útil do fotobiorreator;
+- exportação de anotações de ROI para evolução futura de um detector automático de bordas.
 
-## Stack Tecnológica
+## Stack tecnológica
 
 ### Backend
 
-- Python 3.10+
+- Python 3.12 recomendado
 - Flask 3
 - Flask-SQLAlchemy
 - Flask-Migrate
@@ -32,6 +43,16 @@ Principais capacidades:
 - Flask-Dance
 - Flask-Minify
 - Paho MQTT
+- Marshmallow
+
+### Classificação de biomassa
+
+- NumPy
+- Pandas
+- Pillow
+- Joblib
+- scikit-learn
+- XGBoost
 
 ### Frontend
 
@@ -42,354 +63,81 @@ Principais capacidades:
 - Socket.IO client
 - Vite
 - Sass
-- PostCSS / cssnano / autoprefixer
+- PostCSS
 
-### Infraestrutura e Dados
+### Infraestrutura e dados
 
 - SQLite por padrão
-- suporte a MySQL/PostgreSQL via variáveis de ambiente
-- Docker
+- suporte a banco relacional via variáveis de ambiente
+- Docker / Docker Compose
 - Nginx
 - Redis preparado para uso com Celery
+- Mosquitto para MQTT em ambiente local/laboratorial
 
-## Arquitetura
-
-O projeto segue uma organização modular em `apps/`, separando autenticação, rotas de páginas, serviços, integração MQTT, WebSocket e modelos de dados.
-
-Fluxo resumido:
-
-1. sensores externos publicam dados no broker MQTT;
-2. o cliente MQTT da aplicação consome mensagens do tópico configurado;
-3. as leituras são validadas e persistidas no banco;
-4. uma tarefa em background emite os dados mais recentes via Socket.IO;
-5. o frontend recebe os eventos e atualiza KPIs e gauges em tempo real.
-
-## Estrutura do Projeto
+## Estrutura do projeto
 
 ```text
 dashboard/
 ├── apps/
-│   ├── authentication/   # login, cadastro, OAuth, modelos de usuário e sensores
-│   ├── charts/           # rotas relacionadas a gráficos
-│   ├── dyn_dt/           # tabelas dinâmicas
-│   ├── home/             # rotas das páginas HTML principais
-│   ├── mqtt/             # cliente MQTT
-│   ├── services/         # regras de negócio para sensores e KPIs
-│   ├── config.py         # configurações da aplicação
-│   ├── extensions.py     # extensões compartilhadas, como SocketIO
-│   └── __init__.py       # app factory e registro de blueprints
-├── migrations/           # migrações do banco com Alembic
-├── static/               # CSS, JS, imagens, fontes e SCSS
-├── templates/            # layouts e páginas Jinja2
+│   ├── authentication/        # login, cadastro, OAuth, modelos de usuário e sensores
+│   ├── biomass_classifier/    # módulo de classificação de biomassa por imagem
+│   ├── charts/                # rotas relacionadas a gráficos
+│   ├── dyn_dt/                # páginas com tabelas dinâmicas
+│   ├── home/                  # rotas das páginas HTML principais
+│   ├── mqtt/                  # cliente MQTT
+│   ├── services/              # regras de negócio de sensores e KPIs
+│   ├── config.py              # configuração da aplicação
+│   ├── extensions.py          # extensões compartilhadas
+│   └── __init__.py            # app factory e registro de blueprints
+├── migrations/                # migrações do banco com Alembic
+├── static/                    # CSS, JS, imagens, fontes e SCSS
+├── templates/                 # layouts e páginas Jinja2
 ├── Dockerfile
 ├── docker-compose.yml
 ├── requirements.txt
 ├── package.json
-└── run.py                # ponto de entrada da aplicação
+├── PROJECT_CONTEXT.md         # contexto operacional e histórico técnico do projeto
+└── run.py                     # ponto de entrada da aplicação
 ```
 
-## Componentes Principais
+## Arquitetura resumida
 
-### 1. App Factory
+### 1. Aplicação Flask
 
-O bootstrap da aplicação acontece em `apps/__init__.py`.
+O bootstrap da aplicação acontece em `apps/__init__.py`, que:
 
-Responsabilidades:
+- instancia o app Flask;
+- registra blueprints e extensões;
+- conecta SQLAlchemy, LoginManager, Migrate e Socket.IO;
+- configura templates e arquivos estáticos.
 
-- instanciar o Flask app;
-- registrar extensões como SQLAlchemy, LoginManager e Migrate;
-- registrar blueprints;
-- habilitar login social;
-- configurar diretórios de templates e arquivos estáticos.
+### 2. Banco principal e autenticação
 
-### 2. Configuração
+A base principal usa SQLAlchemy e, por padrão, grava em `apps/db.sqlite3`.
 
-O arquivo `apps/config.py` centraliza:
+Modelos relevantes:
 
-- modo Debug e Production;
-- `SECRET_KEY`;
-- configuração de banco;
-- parâmetros de OAuth;
-- configuração de Redis para Celery;
-- fallback para SQLite.
+- `Users`
+- `Sensor`
+- `SensorReading`
+- `OAuth`
 
-Por padrão, caso nenhuma configuração de banco externo seja fornecida, a aplicação usa um arquivo SQLite em `apps/db.sqlite3`.
+O sistema suporta autenticação local e login social, desde que as credenciais de OAuth sejam fornecidas no ambiente.
 
-### 3. Modelos de Dados
+### 3. Fluxo MQTT e tempo real
 
-Os modelos principais ficam em `apps/authentication/models.py`.
+O cliente MQTT fica em `apps/mqtt/client.py` e consome leituras do broker configurado. Depois disso:
 
-Entidades relevantes:
+- a leitura é validada;
+- o sensor é verificado;
+- os dados são persistidos;
+- o backend emite atualizações via Socket.IO;
+- o frontend atualiza KPIs, gráficos e gauges.
 
-- `Users`: usuários autenticáveis da plataforma;
-- `Sensor`: sensores cadastrados por usuário;
-- `SensorReading`: leituras históricas dos sensores;
-- `OAuth`: vínculo de autenticação social.
-
-### 4. Camada de Serviços
-
-Os serviços em `apps/services/` encapsulam a lógica de domínio.
-
-#### `sensor_service.py`
-
-Fornece operações como:
-
-- criar sensores;
-- registrar leituras;
-- consultar leitura mais recente;
-- consultar histórico;
-- validar existência de sensor.
-
-#### `kpi_service.py`
-
-Atualmente retorna KPIs mockados:
-
-- `co2_total`
-- `efficiency`
-- `co2_monthly`
-- `active_time`
-
-O arquivo já está preparado para evoluir para cálculos reais baseados em dados persistidos.
-
-### 5. Integração MQTT
-
-O cliente MQTT está em `apps/mqtt/client.py`.
-
-Configuração atual:
-
-- broker: `192.168.2.105`
-- porta: `1883`
-- tópico: `cba_fotobiorreator/sensors/+/data`
-
-Comportamento:
-
-- realiza subscribe no tópico configurado;
-- faz parse do payload JSON;
-- extrai `sensor_id` e `value`;
-- valida a existência do sensor;
-- persiste a leitura no banco.
-
-Exemplo esperado de payload:
-
-```json
-{
-  "sensor_id": 1,
-  "value": 425.7
-}
-```
-
-### 6. WebSocket / Tempo Real
-
-A integração de tempo real está distribuída em:
-
-- `apps/extensions.py`
-- `apps/websocket.py`
-- `static/assets/js/realtime.js`
-
-No backend:
-
-- `SocketIO` é configurado com `cors_allowed_origins="*"`;
-- uma tarefa em background emite periodicamente:
-  - `sensor_update`
-  - `kpi_update`
-
-No frontend:
-
-- o cliente Socket.IO recebe eventos;
-- `sensors.js` atualiza gauges;
-- `kpis.js` atualiza os indicadores numéricos;
-- `dashboard.js` inicializa os gráficos e componentes visuais.
-
-### 7. Frontend e Templates
-
-O frontend usa renderização server-side com Jinja2.
-
-Arquivos importantes:
-
-- `templates/layouts/base.html`: layout base da aplicação;
-- `templates/includes/scripts.html`: scripts globais;
-- `templates/home/index.html`: dashboard principal;
-- `static/assets/js/dashboard.js`: gráficos e gauges;
-- `static/assets/css/custom.css`: customizações visuais do projeto.
-
-## Como Executar Localmente
-
-### Pré-requisitos
-
-- Python 3.10 ou superior
-- Node.js 18+ recomendado
-- npm
-- broker MQTT acessível, se o fluxo em tempo real for necessário
-
-### 1. Criar ambiente virtual
-
-```bash
-python -m venv venv
-source venv/bin/activate
-```
-
-No Windows:
-
-```bash
-venv\Scripts\activate
-```
-
-### 2. Instalar dependências Python
-
-```bash
-pip install -r requirements.txt
-```
-
-### 3. Configurar variáveis de ambiente
-
-Crie um arquivo `.env` com base em `env.sample`.
-
-Exemplo:
-
-```env
-DEBUG=True
-FLASK_APP=run.py
-SECRET_KEY=YOUR_SUPER_KEY
-ASSETS_ROOT=/static/assets
-```
-
-### 4. Aplicar migrações
-
-```bash
-flask db upgrade
-```
-
-Caso ainda não exista histórico local de migração:
-
-```bash
-flask db init
-flask db migrate
-flask db upgrade
-```
-
-### 5. Instalar dependências front-end
-
-```bash
-npm install
-```
-
-### 6. Rodar o watcher de assets
-
-Em um terminal:
-
-```bash
-npm run dev
-```
-
-### 7. Subir a aplicação Flask
-
-Em outro terminal:
-
-```bash
-python run.py
-```
-
-Por padrão, a aplicação é iniciada em:
+Fluxo resumido:
 
 ```text
-http://127.0.0.1:5000
-```
-
-## Execução com Docker
-
-O projeto inclui `Dockerfile` e `docker-compose.yml`.
-
-### Subir com Docker Compose
-
-```bash
-docker compose up --build
-```
-
-Observações:
-
-- o container principal é `appseed_app`;
-- o Nginx expõe a porta `5085`;
-- o `Dockerfile` executa migrações durante o build.
-
-## Scripts NPM
-
-Definidos em `package.json`:
-
-- `npm run dev`: build em modo desenvolvimento com watch;
-- `npm run build`: build de produção e minificação de CSS;
-- `npm run minify-css`: minifica os CSS gerados.
-
-## Banco de Dados
-
-### Padrão
-
-- SQLite local em `apps/db.sqlite3`
-
-### Externo
-
-Pode ser configurado via variáveis de ambiente:
-
-- `DB_ENGINE`
-- `DB_NAME`
-- `DB_HOST`
-- `DB_PORT`
-- `DB_USERNAME`
-- `DB_PASS`
-
-## Autenticação
-
-O sistema suporta:
-
-- login/senha local;
-- autenticação com GitHub;
-- autenticação com Google.
-
-As integrações sociais dependem do preenchimento de:
-
-- `GITHUB_ID`
-- `GITHUB_SECRET`
-- `GOOGLE_ID`
-- `GOOGLE_SECRET`
-
-## Rotas e Módulos
-
-### Home
-
-`apps/home/routes.py`
-
-- `/index`
-- `/<template>`
-
-Serve as páginas HTML da pasta `templates/home/`.
-
-### Authentication
-
-`apps/authentication/routes.py`
-
-Responsável por:
-
-- login;
-- logout;
-- registro;
-- tratamento de páginas de erro;
-- fluxo de OAuth.
-
-### Dynamic Tables
-
-`apps/dyn_dt/routes.py`
-
-Módulo voltado a páginas com tabelas dinâmicas.
-
-### Charts
-
-`apps/charts/routes.py`
-
-Rotas auxiliares para visualização de gráficos.
-
-## Fluxo de Dados em Tempo Real
-
-```text
-Dispositivo/Sensor
+Sensor/Dispositivo
     ↓ MQTT
 Broker
     ↓
@@ -402,40 +150,259 @@ Banco de Dados
 apps/websocket.py
     ↓ Socket.IO
 Frontend (realtime.js)
-    ↓
-dashboard.js / sensors.js / kpis.js
 ```
 
-## Convenções de Desenvolvimento
+### 4. Módulo de classificação de biomassa
 
-- backend modularizado por responsabilidade;
-- uso de serviços para encapsular regras de domínio;
-- templates Jinja2 para renderização server-side;
-- JavaScript modular no frontend para tempo real;
-- migrações versionadas com Alembic.
+O módulo está em `apps/biomass_classifier/` e roda dentro do próprio Flask.
 
-## Pontos de Atenção
+Arquivos principais:
 
-O projeto já está funcional, mas há alguns pontos importantes para evolução:
+- `apps/biomass_classifier/routes.py`
+- `apps/biomass_classifier/service.py`
+- `apps/biomass_classifier/dataset_labeler.py`
+- `apps/biomass_classifier/data/training_dataset.csv`
+- `apps/biomass_classifier/artifacts/biomass_classifier.joblib`
 
-- `KPIService` ainda entrega valores mockados;
-- o broker MQTT está fixo no código e idealmente deveria vir de variável de ambiente;
-- o carregamento global de scripts em tempo real merece cuidado para páginas que não possuem os mesmos componentes do dashboard;
-- seria útil adicionar testes automatizados para serviços e rotas;
-- o processo de build Docker atualmente executa migrações no build, o que pode não ser ideal em todos os ambientes.
+Esse módulo é responsável por:
 
-## Melhorias Recomendadas
+- receber uploads da página `img_rec`;
+- extrair features da imagem;
+- executar a predição do estado da biomassa;
+- persistir histórico local das inferências;
+- aceitar correção manual de rótulos;
+- retreinar o modelo com amostras supervisionadas;
+- registrar ROI manual para restringir a análise à área útil do PBR.
 
-- externalizar configuração MQTT para `.env`;
+## Página de reconhecimento de imagem
+
+A página `templates/home/img_rec.html` faz parte do dashboard e não depende de uma aplicação externa separada.
+
+Fluxo atual:
+
+1. o usuário envia uma imagem do fotobiorreator;
+2. a própria área de upload vira preview da imagem;
+3. opcionalmente, o usuário arrasta sobre a imagem para marcar uma ROI manual;
+4. a imagem é enviada para o backend com ou sem ROI;
+5. o sistema mostra:
+- classe prevista;
+- confiança principal;
+- features calculadas;
+- probabilidades por classe;
+- modo de leitura usado (`imagem inteira` ou `seleção manual`).
+
+Também é possível:
+
+- salvar o rótulo correto manualmente;
+- retreinar o modelo pela própria interface, quando houver amostras suficientes.
+
+## Persistência do classificador
+
+Além do banco principal do projeto, o módulo de biomassa mantém sua própria persistência local em:
+
+- `apps/biomass_classifier/data/biomass_classifier.sqlite3`
+- `apps/biomass_classifier/data/training_dataset.csv`
+- `apps/biomass_classifier/data/manual_training_dataset.csv` quando houver retreino
+- `apps/biomass_classifier/data/roi_annotations_dataset.csv` quando existirem anotações de ROI
+- `apps/biomass_classifier/uploads/` para imagens enviadas
+- `apps/biomass_classifier/artifacts/biomass_classifier.joblib` para o modelo treinado
+
+### ROI manual
+
+A ROI manual permite que o usuário delimite a área útil do fotobiorreator antes da inferência. Isso traz dois benefícios:
+
+- melhora a qualidade da leitura atual quando há muito fundo, reflexo ou ruído na imagem;
+- cria um dataset de anotações reutilizável para futura detecção automática de bordas.
+
+Observação importante:
+
+- `roi_annotations_dataset.csv` só é criado após uma nova predição ou atualização de rótulo executadas já com a versão atual do backend carregada.
+
+## Endpoints internos do classificador
+
+Base URL:
+
+- `/api/biomass-classifier`
+
+Rotas:
+
+- `POST /api/biomass-classifier/predict`
+- `POST /api/biomass-classifier/labels`
+- `GET /api/biomass-classifier/history`
+- `POST /api/biomass-classifier/retrain`
+
+Resposta típica de `/predict`:
+
+```json
+{
+  "id": 1,
+  "status": "Alta",
+  "confianca": 0.93,
+  "features": {
+    "mean_green_index": 0.1234,
+    "mean_gray": 145.2,
+    "std_color": 12.3,
+    "mean_hue": 88.1
+  },
+  "probabilidades": {
+    "Baixa": 0.03,
+    "Media": 0.12,
+    "Alta": 0.80,
+    "Sedimentacao": 0.05
+  },
+  "roi_modo": "manual"
+}
+```
+
+## Como executar localmente
+
+### Pré-requisitos
+
+- Python 3.12 recomendado
+- Node.js 18+
+- npm
+- broker MQTT acessível, se o fluxo em tempo real for necessário
+- Redis opcional, se houver uso de Celery
+
+### 1. Criar e ativar ambiente virtual
+
+```bash
+python3.12 -m venv .venv
+source .venv/bin/activate
+```
+
+### 2. Instalar dependências Python
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Instalar dependências do frontend
+
+```bash
+npm install
+```
+
+### 4. Configurar variáveis de ambiente
+
+Crie um arquivo `.env` com base em `env.sample`.
+
+Exemplo mínimo:
+
+```env
+DEBUG=True
+FLASK_APP=run.py
+SECRET_KEY=YOUR_SUPER_KEY
+ASSETS_ROOT=/static/assets
+MQTT_BROKER=127.0.0.1
+MQTT_PORT=1883
+MQTT_TOPIC=cba_fotobiorreator/sensors/+/data
+```
+
+### 5. Aplicar migrações
+
+```bash
+flask db upgrade
+```
+
+Se ainda não existir histórico local de migração:
+
+```bash
+flask db init
+flask db migrate
+flask db upgrade
+```
+
+### 6. Rodar os assets em modo desenvolvimento
+
+Em um terminal:
+
+```bash
+npm run dev
+```
+
+### 7. Subir a aplicação
+
+Em outro terminal:
+
+```bash
+python run.py
+```
+
+Por padrão:
+
+```text
+http://127.0.0.1:5000
+```
+
+## Execução com Docker
+
+O projeto inclui `Dockerfile` e `docker-compose.yml`.
+
+Para subir com Docker Compose:
+
+```bash
+docker compose up --build
+```
+
+Observações:
+
+- o projeto também inclui um serviço Nginx na composição;
+- o build atual executa migrações, o que pode ser conveniente em protótipo, mas merece revisão para produção;
+- para uso completo, a configuração de MQTT e banco também precisa ser alinhada ao ambiente de deploy.
+
+## Configuração e ambiente
+
+As configurações centrais estão em `apps/config.py`.
+
+### Banco de dados
+
+Por padrão:
+
+- SQLite local em `apps/db.sqlite3`
+
+Para banco externo, use variáveis como:
+
+- `DB_ENGINE`
+- `DB_NAME`
+- `DB_HOST`
+- `DB_PORT`
+- `DB_USERNAME`
+- `DB_PASS`
+
+### OAuth
+
+Integrações opcionais:
+
+- GitHub
+- Google
+
+Variáveis esperadas:
+
+- `GITHUB_ID`
+- `GITHUB_SECRET`
+- `GOOGLE_ID`
+- `GOOGLE_SECRET`
+
+## Pontos de atenção atuais
+
+- a configuração de MQTT agora pode ser feita por ambiente via `.env` (`MQTT_BROKER`, `MQTT_PORT`, `MQTT_TOPIC`), mas ainda vale evoluir o tratamento de falha de conexão no boot;
+- se o broker MQTT estiver indisponível no boot, a aplicação pode falhar antes de subir o servidor;
+- o módulo de biomassa usa persistência local própria além do banco principal do projeto;
+- o retreino depende de um volume mínimo de amostras rotuladas;
+- o deploy completo exige atenção especial a MQTT, Socket.IO, persistência de arquivos e configuração por ambiente.
+
+## Melhorias recomendadas
+
+- tornar a inicialização do MQTT tolerante a falhas no ambiente de desenvolvimento;
 - calcular KPIs reais a partir do histórico persistido;
-- adicionar testes unitários e de integração;
-- isolar scripts do dashboard apenas nas páginas que realmente usam charts/gauges;
-- adicionar observabilidade básica com logs estruturados;
-- documentar payloads MQTT e eventos Socket.IO em uma seção de contrato técnico.
+- adicionar testes automatizados para serviços e rotas;
+- revisar a estratégia de persistência entre banco principal e banco local do classificador;
+- dockerizar o stack com configuração mais próxima de produção quando o projeto avançar para deploy completo.
 
 ## Licença
 
-O repositório inclui `LICENSE.md`. Verifique o arquivo para os termos de uso aplicáveis.
+O repositório inclui `LICENSE.md`. Consulte o arquivo para os termos aplicáveis.
 
 ## Créditos
 

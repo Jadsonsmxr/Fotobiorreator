@@ -478,3 +478,62 @@ Esses arquivos de sistema nao devem entrar no commit final.
 ## Limpeza apos commit
 
 Em 27/03/2026 o arquivo local de apoio `dashboard/templates/home/img_rec copy.html` foi removido para evitar ruido no repositorio apos o commit estrutural.
+
+## Iteracao de UI - img_rec
+
+Em 30/03/2026 foi iniciada uma reestruturacao incremental da pagina `img_rec.html`.
+
+Passo 1 aplicado:
+
+- upload e pre-visualizacao foram unificados em um unico card principal;
+- a antiga divisao em dois cards concorrentes foi removida;
+- a interface superior agora segue um fluxo mais continuo entre envio, conferencia e acao;
+- o card lateral passou a ser uma coluna interna de apoio visual dentro do mesmo bloco principal.
+
+A primeira proposta do passo 1 foi refeita na mesma data. A segunda direcao adotada substituiu a coluna lateral por uma estrutura em etapas visuais dentro de um card mestre, com dois paineis internos: envio e pre-visualizacao.
+
+A interface numerada foi descartada. A direcao adotada passou a ser um workspace unico de selecao de imagem, com upload e pre-visualizacao dentro do mesmo bloco principal, evitando excesso de didatismo e melhorando a coesao visual.
+
+A pre-visualizacao deixou de existir como bloco separado e passou a fazer parte da propria area de selecao de imagem. A zona de upload virou um workspace unico, com acao de selecao de um lado e conferencial visual da imagem no mesmo contexto.
+
+Em 30/03/2026 a area de upload do `img_rec` foi corrigida para funcionar como um unico container com dois estados: vazio e preenchido. A mesma caixa de selecao agora vira a area de preview apos o envio da imagem, removendo a duplicacao visual e simplificando a hierarquia da interface.
+
+A interface da caixa de imagem foi refinada para ter estado preenchido sem hover chamativo, com acao explicita de remover a imagem. O bloco de resultado tambem ganhou uma caixa interna propria para equilibrar o peso visual com a area de selecao.
+
+Em 30/03/2026 foi feita uma nova revisao critica da UX da pagina `img_rec`. A avaliacao atual e que a tela evoluiu bem na integracao entre selecao e preview, mas ainda pode melhorar em polimento visual, consistencia semantica do bloco de resultado, linguagem da interface e refinamento do estado preenchido da caixa de imagem.
+
+Foi alinhada a hierarquia visual entre a caixa de selecao de imagem e a caixa de resultado. As duas secoes agora seguem o mesmo padrao de titulo, subtitulo e conteudo interno, evitando a sensacao de que uma esta estruturada por dentro da caixa e a outra por fora.
+
+- 2026-03-31: Implementada base de ROI manual na tela `img_rec` com seleção por arraste sobre o preview, envio das coordenadas para o backend, persistência no SQLite e exportação contínua em `apps/biomass_classifier/data/roi_annotations_dataset.csv` para futura evolução de um detector automático de bordas do fotobiorreator.
+
+- 2026-03-31: O arquivo `apps/biomass_classifier/data/roi_annotations_dataset.csv` só é criado após uma nova predição ou salvamento de rótulo executados já com a versão atual do backend carregada. Se ele ainda não existir em disco, é sinal de que o fluxo novo ainda não foi disparado após o deploy/restart local.
+
+- 2026-03-31: Ao subir `run.py`, a aplicação pode abortar antes do start do servidor Flask se o broker MQTT configurado em `apps/mqtt/client.py` (`192.168.2.105:1883`) não estiver acessível. O `start_mqtt(app)` é chamado no boot e hoje não trata falha de conexão como opcional.
+
+- 2026-03-31: Foi discutido o momento de deploy. A orientação atual é não migrar a aplicação para Streamlit, porque o projeto já é um dashboard Flask com autenticação, Socket.IO, MQTT e UI própria. A recomendação é primeiro estabilizar configuração, responsividade, fluxo de reconhecimento e serviços, e depois pensar em deploy do stack atual (Flask + broker + banco), preferencialmente com configuração por ambiente.
+
+- 2026-03-31: README atualizado para refletir a arquitetura atual do projeto, incluindo módulo `apps/biomass_classifier`, fluxo de ROI manual, persistência local do classificador, execução local e pontos de atenção de MQTT/deploy.
+
+- 2026-04-01: Foi definida uma direcao de documentacao dupla para o projeto: uma apresentacao mais institucional para submissao/apresentacao a FAPEAM e uma versao publica voltada a GitHub, com README tecnico, contexto do projeto, roteiro de execucao e futura limpeza de segredos, arquivos locais e configuracoes sensiveis antes da publicacao aberta.
+
+- 2026-04-01: A documentacao institucional do projeto deve permanecer neutra, sem citar orgaos ou contextos especificos, para poder servir tanto em apresentacoes formais quanto em futura publicacao aberta do repositorio.
+
+- 2026-04-01: Criado `ABOUT_PROJECT.md` com posicionamento institucional e neutro do projeto, cobrindo apresentacao, objetivo, problema, solucao proposta, diferenciais, arquitetura em alto nivel, estado atual e potencial de evolucao.
+
+- 2026-04-01: Criado `ROADMAP.md` com planejamento de curto, medio e longo prazo, cobrindo consolidacao do monitoramento, refinamento da `img_rec`, evolucao do classificador, uso de ROI, maturidade de dados, deploy e robustez de engenharia.
+
+- 2026-04-01: Foi recomendada uma estrategia de documentacao em camadas para o repositorio monorepo, com um README raiz explicando a visao geral e documentos especificos para cada modulo principal (`dashboard/` e `firmware/`), evitando misturar instrucoes de backend web com codigo de microcontrolador.
+
+- 2026-04-01: Criados um README na raiz do repositorio e um `firmware/README.md`, separando a documentacao entre visao geral do sistema, modulo web (`dashboard/`) e modulo embarcado (`firmware/`). A documentacao do firmware agora registra o controlador principal, os testes de hardware, o uso de PlatformIO/ESP32 e o acoplamento atual com MQTT.
+
+- 2026-04-01: Na preparacao para publicacao futura do repositorio, foram reforcadas regras de `.gitignore` na raiz e em `dashboard/` para cobrir `.env`, bases SQLite locais, datasets gerados do classificador, `.DS_Store`, logs e outros artefatos de ambiente.
+
+- 2026-04-01: Foi explicado o motivo de mover configuracoes como MQTT para `.env`: separar ambiente local do codigo versionado, evitar IPs e credenciais fixas no repositorio e facilitar deploy futuro. Tambem foi esclarecido o conceito de arquivos template/exemplo de configuracao, usados para versionar apenas o formato esperado sem expor valores reais.
+
+- 2026-04-01: A configuracao MQTT do dashboard foi externalizada para `.env` (`MQTT_BROKER`, `MQTT_PORT`, `MQTT_TOPIC`) e `run.py` passou a carregar explicitamente o arquivo `.env` no boot. Isso desacopla IP local do codigo e prepara melhor o projeto para troca de ambiente, demonstracao e futuro deploy.
+
+- 2026-04-01: O arquivo local `.env` do dashboard recebeu explicitamente as chaves `MQTT_BROKER`, `MQTT_PORT` e `MQTT_TOPIC`, alinhando o ambiente real de desenvolvimento com o `env.sample`.
+
+- 2026-04-01: Foi esclarecido que `apps/mqtt/client.py` ainda mostra valores de MQTT porque eles ficaram como fallbacks de desenvolvimento no `os.getenv(...)`. O ambiente real agora vem do `.env`; os valores no codigo servem apenas como padrao quando as variaveis nao estiverem definidas.
+
+- 2026-04-02: Foi esclarecido que o projeto usa `socketio.run(...)` em `run.py` para execucao local, o que na pratica caracteriza o servidor de desenvolvimento do Flask/Flask-SocketIO. Para deploy, o repositório já aponta para Gunicorn em `Dockerfile` e `render.yaml`, embora a compatibilidade final com Socket.IO precise ser considerada no ambiente de producao.
