@@ -23,11 +23,13 @@ DATABASE_PATH = DATA_DIR / "biomass_classifier.sqlite3"
 MODEL_PATH = ARTIFACTS_DIR / "biomass_classifier.joblib"
 DEFAULT_TRAINING_DATASET_PATH = DATA_DIR / "training_dataset.csv"
 MANUAL_TRAINING_DATASET_PATH = DATA_DIR / "manual_training_dataset.csv"
+ROI_ANNOTATIONS_DATASET_PATH = DATA_DIR / "roi_annotations_dataset.csv"
 
 FEATURE_COLUMNS = ["mean_green_index", "mean_gray", "std_color", "mean_hue"]
 VALID_CLASSES = ("Baixa", "Media", "Alta", "Sedimentacao")
 MODEL_BUNDLE_CACHE: dict[str, object] | None = None
 MODEL_BUNDLE_MTIME: float | None = None
+ROI_COLUMNS = ("roi_x", "roi_y", "roi_width", "roi_height")
 
 
 def ensure_storage() -> None:
@@ -46,12 +48,24 @@ def ensure_storage() -> None:
                 mean_gray REAL NOT NULL,
                 std_color REAL NOT NULL,
                 mean_hue REAL NOT NULL,
+                roi_x REAL,
+                roi_y REAL,
+                roi_width REAL,
+                roi_height REAL,
                 predicted_status TEXT NOT NULL,
                 manual_status TEXT,
                 confidence REAL NOT NULL
             )
             """
         )
+
+        existing_columns = {
+            row[1]
+            for row in connection.execute("PRAGMA table_info(biomass_classification_records)").fetchall()
+        }
+        for column in ROI_COLUMNS:
+            if column not in existing_columns:
+                connection.execute(f"ALTER TABLE biomass_classification_records ADD COLUMN {column} REAL")
 
 
 def get_connection() -> sqlite3.Connection:
@@ -69,8 +83,91 @@ def save_uploaded_image(upload: FileStorage) -> Path:
     return image_path
 
 
-def extract_features(image_path: str | Path) -> dict[str, float]:
+def sync_roi_annotations_dataset() -> None:
+    with get_connection() as connection:
+        rows = connection.execute(
+            """
+            SELECT
+                id,
+                created_at,
+                image_path,
+                roi_x,
+                roi_y,
+                roi_width,
+                roi_height,
+                predicted_status,
+                manual_status
+            FROM biomass_classification_records
+            WHERE roi_x IS NOT NULL
+              AND roi_y IS NOT NULL
+              AND roi_width IS NOT NULL
+              AND roi_height IS NOT NULL
+            ORDER BY id ASC
+            """
+        ).fetchall()
+
+    with ROI_ANNOTATIONS_DATASET_PATH.open("w", newline="", encoding="utf-8") as csv_file:
+        writer = csv.DictWriter(
+            csv_file,
+            fieldnames=[
+                "id",
+                "created_at",
+                "image_path",
+                "roi_x",
+                "roi_y",
+                "roi_width",
+                "roi_height",
+                "predicted_status",
+                "manual_status",
+            ],
+        )
+        writer.writeheader()
+        for row in rows:
+            writer.writerow(dict(row))
+
+
+def normalize_roi(roi: dict[str, float] | None) -> dict[str, float] | None:
+    if roi is None:
+        return None
+
+    required_keys = {"x", "y", "width", "height"}
+    if set(roi) != required_keys:
+        raise ValueError("ROI inválida.")
+
+    normalized = {key: float(value) for key, value in roi.items()}
+    x = max(0.0, min(1.0, normalized["x"]))
+    y = max(0.0, min(1.0, normalized["y"]))
+    width = max(0.0, min(1.0 - x, normalized["width"]))
+    height = max(0.0, min(1.0 - y, normalized["height"]))
+
+    if width <= 0 or height <= 0:
+        raise ValueError("ROI inválida.")
+
+    return {"x": x, "y": y, "width": width, "height": height}
+
+
+def crop_image_to_roi(image: Image.Image, roi: dict[str, float] | None) -> Image.Image:
+    normalized_roi = normalize_roi(roi)
+    if normalized_roi is None:
+        return image
+
+    image_width, image_height = image.size
+    left = int(round(normalized_roi["x"] * image_width))
+    top = int(round(normalized_roi["y"] * image_height))
+    right = int(round((normalized_roi["x"] + normalized_roi["width"]) * image_width))
+    bottom = int(round((normalized_roi["y"] + normalized_roi["height"]) * image_height))
+
+    left = max(0, min(left, image_width - 1))
+    top = max(0, min(top, image_height - 1))
+    right = max(left + 1, min(right, image_width))
+    bottom = max(top + 1, min(bottom, image_height))
+
+    return image.crop((left, top, right, bottom))
+
+
+def extract_features(image_path: str | Path, roi: dict[str, float] | None = None) -> dict[str, float]:
     image = Image.open(image_path).convert("RGB")
+    image = crop_image_to_roi(image, roi)
     rgb_array = np.array(image, dtype=np.float32)
 
     red_channel = rgb_array[:, :, 0]
@@ -162,12 +259,13 @@ def load_model_bundle(model_path: str | Path = MODEL_PATH) -> dict:
     return MODEL_BUNDLE_CACHE
 
 
-def predict_image(image_path: str | Path) -> dict[str, object]:
+def predict_image(image_path: str | Path, roi: dict[str, float] | None = None) -> dict[str, object]:
     bundle = load_model_bundle()
     model = bundle["model"]
     label_encoder = bundle["label_encoder"]
 
-    features = extract_features(image_path)
+    normalized_roi = normalize_roi(roi)
+    features = extract_features(image_path, normalized_roi)
     model_input = np.array([[features[column] for column in FEATURE_COLUMNS]])
 
     predicted_index = model.predict(model_input)[0]
@@ -183,17 +281,18 @@ def predict_image(image_path: str | Path) -> dict[str, object]:
         "status": predicted_status,
         "probabilidades": probabilities,
         "features": features,
+        "roi": normalized_roi,
     }
 
 
-def create_prediction_record(upload: FileStorage) -> dict[str, object]:
+def create_prediction_record(upload: FileStorage, roi: dict[str, float] | None = None) -> dict[str, object]:
     if not upload or not upload.filename:
         raise ValueError("Nenhuma imagem foi enviada.")
 
     image_path = save_uploaded_image(upload)
 
     try:
-        result = predict_image(image_path)
+        result = predict_image(image_path, roi)
     except FileNotFoundError:
         raise
     except UnidentifiedImageError as error:
@@ -205,6 +304,7 @@ def create_prediction_record(upload: FileStorage) -> dict[str, object]:
 
     features = result["features"]
     probabilities = result["probabilidades"]
+    normalized_roi = result["roi"]
     confidence = max(probabilities.values())
     created_at = datetime.now(timezone.utc).isoformat()
 
@@ -218,10 +318,14 @@ def create_prediction_record(upload: FileStorage) -> dict[str, object]:
                 mean_gray,
                 std_color,
                 mean_hue,
+                roi_x,
+                roi_y,
+                roi_width,
+                roi_height,
                 predicted_status,
                 confidence
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 created_at,
@@ -230,11 +334,17 @@ def create_prediction_record(upload: FileStorage) -> dict[str, object]:
                 features["mean_gray"],
                 features["std_color"],
                 features["mean_hue"],
+                normalized_roi["x"] if normalized_roi else None,
+                normalized_roi["y"] if normalized_roi else None,
+                normalized_roi["width"] if normalized_roi else None,
+                normalized_roi["height"] if normalized_roi else None,
                 result["status"],
                 confidence,
             ),
         )
         record_id = cursor.lastrowid
+
+    sync_roi_annotations_dataset()
 
     return {
         "id": record_id,
@@ -242,6 +352,8 @@ def create_prediction_record(upload: FileStorage) -> dict[str, object]:
         "confianca": round(confidence, 3),
         "probabilidades": {key: round(value, 3) for key, value in probabilities.items()},
         "features": {key: round(value, 4) for key, value in features.items()},
+        "roi": normalized_roi,
+        "roi_modo": "manual" if normalized_roi else "imagem_inteira",
     }
 
 
@@ -267,6 +379,7 @@ def save_manual_label(record_id: int, manual_status: str) -> dict[str, object]:
             (manual_status, record_id),
         )
 
+    sync_roi_annotations_dataset()
     return {"ok": True, "id": record_id, "status_real": manual_status}
 
 

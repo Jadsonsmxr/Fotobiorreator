@@ -19,8 +19,16 @@ def predict_biomass():
     if image is None:
         return jsonify({"detail": "Envie uma imagem no campo 'imagem'."}), 400
 
+    roi_values = {
+        "x": request.form.get("roi_x", type=float),
+        "y": request.form.get("roi_y", type=float),
+        "width": request.form.get("roi_width", type=float),
+        "height": request.form.get("roi_height", type=float),
+    }
+    roi = None if any(value is None for value in roi_values.values()) else roi_values
+
     try:
-        payload = create_prediction_record(image)
+        payload = create_prediction_record(image, roi=roi)
     except FileNotFoundError as error:
         return jsonify({"detail": str(error)}), 503
     except ValueError as error:

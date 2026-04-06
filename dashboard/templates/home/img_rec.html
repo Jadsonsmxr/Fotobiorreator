@@ -5,13 +5,31 @@
 {% block stylesheets %}
 <style>
   .img-rec-page .hero-card,
-  .img-rec-page .result-card,
-  .img-rec-page .support-card {
+  .img-rec-page .result-card {
     height: 100%;
   }
 
   .img-rec-page .hero-copy {
     margin-bottom: 1.5rem;
+  }
+
+  .img-rec-page .workspace-card .card-body {
+    padding-top: 0.5rem;
+  }
+
+  .img-rec-page .workspace-shell {
+    padding: 1.25rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .img-rec-page .workspace-head {
+    margin-bottom: 1.25rem;
+  }
+
+  .img-rec-page .workspace-head .card-title {
+    margin-bottom: 0.45rem;
   }
 
   .img-rec-page .hero-kicker,
@@ -30,19 +48,19 @@
   }
 
   .img-rec-page .hero-copy p,
-  .img-rec-page .support-card p {
+  .img-rec-page .workspace-shell p {
     color: rgba(255, 255, 255, 0.66);
   }
 
   .img-rec-page .upload-zone {
     position: relative;
-    border: 2px dashed rgba(0, 242, 195, 0.2);
-    border-radius: 0.75rem;
-    padding: 2rem 1.25rem;
-    text-align: center;
+    min-height: 380px;
+    padding: 1rem;
+    border: 2px dashed rgba(0, 242, 195, 0.22);
+    border-radius: 1rem;
     background:
       linear-gradient(180deg, rgba(0, 242, 195, 0.08), rgba(46, 204, 113, 0.05));
-    transition: border-color 0.2s ease, transform 0.2s ease, background 0.2s ease;
+    transition: border-color 0.2s ease, transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
     overflow: hidden;
   }
 
@@ -52,6 +70,21 @@
     background:
       linear-gradient(180deg, rgba(0, 242, 195, 0.12), rgba(46, 204, 113, 0.08));
     transform: translateY(-1px);
+    box-shadow: 0 12px 24px rgba(0, 242, 195, 0.08);
+  }
+
+  .img-rec-page .upload-zone.is-filled {
+    padding: 0.85rem;
+    min-height: 0;
+  }
+
+  .img-rec-page .upload-zone.is-filled:hover,
+  .img-rec-page .upload-zone.is-filled.drag-over {
+    transform: none;
+    box-shadow: none;
+    border-color: rgba(0, 242, 195, 0.24);
+    background:
+      linear-gradient(180deg, rgba(0, 242, 195, 0.08), rgba(46, 204, 113, 0.05));
   }
 
   .img-rec-page .upload-zone input[type="file"] {
@@ -61,6 +94,25 @@
     height: 100%;
     opacity: 0;
     cursor: pointer;
+    z-index: 3;
+  }
+
+  .img-rec-page .upload-zone.is-filled input[type="file"] {
+    pointer-events: none;
+  }
+
+  .img-rec-page .upload-zone-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 346px;
+    padding: 1.5rem;
+    text-align: center;
+  }
+
+  .img-rec-page .upload-zone-empty.is-hidden {
+    display: none;
   }
 
   .img-rec-page .upload-icon {
@@ -89,68 +141,169 @@
 
   .img-rec-page .preview-wrap {
     display: none;
-    margin-top: 0;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+  }
+
+  .img-rec-page .upload-zone.is-filled .preview-wrap {
+    min-height: 0;
   }
 
   .img-rec-page .preview-wrap.is-visible {
-    display: block;
-  }
-
-  .img-rec-page .preview-panel {
-    margin-bottom: 1.5rem;
-  }
-
-  .img-rec-page .preview-frame {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 320px;
-    padding: 1rem;
-    border-radius: 0.9rem;
+  }
+
+  .img-rec-page .preview-canvas {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+    line-height: 0;
+  }
+
+  .img-rec-page .preview-img {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    max-height: 420px;
+    border-radius: 0.85rem;
+    box-shadow: 0 16px 28px rgba(0, 0, 0, 0.12);
+    object-fit: contain;
+    object-position: center;
     border: 1px solid rgba(255, 255, 255, 0.08);
     background:
       linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.015)),
       radial-gradient(circle at top, rgba(0, 242, 195, 0.08), transparent 55%);
-    overflow: hidden;
   }
 
-  .img-rec-page .preview-empty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.75rem;
-    text-align: center;
-    color: rgba(255, 255, 255, 0.52);
+  .img-rec-page .roi-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    cursor: crosshair;
+    touch-action: none;
+    border-radius: 0.85rem;
   }
 
-  .img-rec-page .preview-empty.is-hidden {
+  .img-rec-page .roi-selection {
     display: none;
+    position: absolute;
+    border: 2px solid rgba(0, 242, 195, 0.92);
+    border-radius: 0.55rem;
+    background: rgba(0, 242, 195, 0.14);
+    box-shadow: 0 0 0 999px rgba(8, 15, 29, 0.34), 0 0 0 1px rgba(8, 15, 29, 0.12);
   }
 
-  .img-rec-page .preview-empty i {
-    font-size: 2rem;
-    color: rgba(0, 242, 195, 0.7);
-  }
-
-  .img-rec-page .preview-img {
-    width: 100%;
-    height: 100%;
-    max-height: 420px;
-    border-radius: 0.75rem;
-    object-fit: contain;
-    object-position: center;
-    border: 0;
+  .img-rec-page .roi-selection.is-visible {
+    display: block;
   }
 
   .img-rec-page .preview-caption {
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    margin-top: 0.75rem;
+    margin-top: 0.85rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
     font-size: 0.82rem;
     color: rgba(255, 255, 255, 0.6);
+  }
+
+  .img-rec-page .preview-caption.is-visible {
+    display: flex;
+  }
+
+  .img-rec-page .preview-caption-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-width: 0;
+  }
+
+  .img-rec-page .preview-caption-meta .preview-roi-status {
+    color: rgba(0, 242, 195, 0.78);
+    font-size: 0.73rem;
+    font-weight: 600;
+  }
+
+  .img-rec-page .preview-caption-meta span:first-child {
+    color: #ffffff;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .img-rec-page .preview-caption-meta span:last-child {
+    color: rgba(255, 255, 255, 0.52);
+  }
+
+  .img-rec-page .preview-caption-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .img-rec-page .preview-secondary-btn {
+    position: relative;
+    z-index: 4;
+    padding: 0.45rem 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.03);
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 0.75rem;
+    font-weight: 600;
+    transition: 0.2s ease;
+  }
+
+  .img-rec-page .preview-secondary-btn:hover,
+  .img-rec-page .preview-secondary-btn:focus {
+    color: #ffffff;
+    border-color: rgba(0, 242, 195, 0.24);
+    background: rgba(0, 242, 195, 0.08);
+  }
+
+  .img-rec-page .preview-secondary-btn.is-hidden {
+    display: none;
+  }
+
+  .img-rec-page .preview-remove-btn {
+    position: relative;
+    z-index: 4;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 34px;
+    height: 34px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1;
+    transition: 0.2s ease;
+  }
+
+  .img-rec-page .preview-remove-btn:hover,
+  .img-rec-page .preview-remove-btn:focus {
+    color: #ffffff;
+    border-color: rgba(255, 107, 107, 0.35);
+    background: rgba(255, 107, 107, 0.12);
+  }
+
+  .img-rec-page .roi-helper {
+    display: none;
+    margin-top: 0.85rem;
+    color: rgba(255, 255, 255, 0.56);
+    font-size: 0.78rem;
+  }
+
+  .img-rec-page .roi-helper.is-visible {
+    display: block;
   }
 
   .img-rec-page .actions-row {
@@ -232,11 +385,11 @@
   .img-rec-page .status-panel {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.85rem;
   }
 
   .img-rec-page .support-divider {
-    margin: 1.5rem 0;
+    margin: 1.25rem 0;
     border-color: rgba(255, 255, 255, 0.08);
   }
 
@@ -258,6 +411,21 @@
     margin-top: 0.5rem;
   }
 
+  .img-rec-page .result-shell {
+    padding: 1.35rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .img-rec-page .result-summary {
+    margin-bottom: 1.5rem;
+    padding: 1rem 1.1rem;
+    border-radius: 0.9rem;
+    border: 1px solid rgba(0, 242, 195, 0.12);
+    background: rgba(0, 242, 195, 0.05);
+  }
+
   .img-rec-page .result-card {
     display: none;
   }
@@ -271,7 +439,7 @@
     align-items: flex-start;
     justify-content: space-between;
     gap: 1rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0;
   }
 
   .img-rec-page .status-badge {
@@ -463,7 +631,7 @@
   }
 
   .white-content .img-rec-page .hero-copy p,
-  .white-content .img-rec-page .support-card p,
+  .white-content .img-rec-page .workspace-shell p,
   .white-content .img-rec-page .helper-text,
   .white-content .img-rec-page .result-meta,
   .white-content .img-rec-page .status-list,
@@ -484,12 +652,19 @@
     background: linear-gradient(180deg, rgba(3, 182, 83, 0.12), rgba(0, 242, 195, 0.08));
   }
 
+  .white-content .img-rec-page .upload-zone.is-filled:hover,
+  .white-content .img-rec-page .upload-zone.is-filled.drag-over {
+    border-color: rgba(3, 182, 83, 0.22);
+    background: linear-gradient(180deg, rgba(3, 182, 83, 0.08), rgba(0, 242, 195, 0.05));
+    box-shadow: none;
+    transform: none;
+  }
+
   .white-content .img-rec-page .upload-icon {
     background: rgba(3, 182, 83, 0.1);
     color: #03b653;
   }
 
-  .white-content .img-rec-page .crop-field label,
   .white-content .img-rec-page .metric-label {
     color: rgba(34, 42, 66, 0.5);
   }
@@ -503,19 +678,57 @@
     border-color: rgba(52, 70, 117, 0.12);
   }
 
-  .white-content .img-rec-page .preview-frame {
+  .white-content .img-rec-page .preview-caption-meta span:first-child {
+    color: #222a42;
+  }
+
+  .white-content .img-rec-page .preview-caption-meta .preview-roi-status {
+    color: #04994a;
+  }
+
+  .white-content .img-rec-page .preview-caption-meta span:last-child {
+    color: rgba(34, 42, 66, 0.56);
+  }
+
+  .white-content .img-rec-page .preview-secondary-btn {
     border-color: rgba(52, 70, 117, 0.12);
-    background:
-      linear-gradient(180deg, rgba(52, 70, 117, 0.04), rgba(52, 70, 117, 0.02)),
-      radial-gradient(circle at top, rgba(3, 182, 83, 0.08), transparent 58%);
+    background: rgba(52, 70, 117, 0.04);
+    color: rgba(34, 42, 66, 0.74);
   }
 
-  .white-content .img-rec-page .preview-empty {
-    color: rgba(34, 42, 66, 0.5);
+  .white-content .img-rec-page .preview-secondary-btn:hover,
+  .white-content .img-rec-page .preview-secondary-btn:focus {
+    border-color: rgba(3, 182, 83, 0.24);
+    background: rgba(3, 182, 83, 0.08);
+    color: #04994a;
   }
 
-  .white-content .img-rec-page .preview-empty i {
-    color: rgba(3, 182, 83, 0.72);
+  .white-content .img-rec-page .preview-remove-btn {
+    border-color: rgba(52, 70, 117, 0.12);
+    background: rgba(52, 70, 117, 0.04);
+    color: rgba(34, 42, 66, 0.76);
+  }
+
+  .white-content .img-rec-page .preview-remove-btn:hover,
+  .white-content .img-rec-page .preview-remove-btn:focus {
+    color: #d92d20;
+    border-color: rgba(217, 45, 32, 0.24);
+    background: rgba(217, 45, 32, 0.08);
+  }
+
+  .white-content .img-rec-page .roi-helper {
+    color: rgba(34, 42, 66, 0.6);
+  }
+
+  .white-content .img-rec-page .workspace-shell,
+  .white-content .img-rec-page .result-shell {
+    border-color: rgba(52, 70, 117, 0.12);
+    background: rgba(52, 70, 117, 0.04);
+  }
+
+  .white-content .img-rec-page .result-summary {
+    border-color: rgba(3, 182, 83, 0.14);
+    background: rgba(3, 182, 83, 0.06);
   }
 
   .white-content .img-rec-page .metric-box,
@@ -625,8 +838,13 @@
   }
 
   @media (max-width: 767.98px) {
-    .img-rec-page .metrics-grid {
-      grid-template-columns: 1fr;
+    .img-rec-page .upload-zone {
+      min-height: 320px;
+    }
+
+    .img-rec-page .upload-zone-empty {
+      min-height: 286px;
+      padding: 1rem;
     }
 
     .img-rec-page .actions-row,
@@ -644,14 +862,13 @@
       text-align: left;
     }
 
-    .img-rec-page .preview-frame {
-      min-height: 240px;
-      padding: 0.75rem;
-    }
-
     .img-rec-page .preview-caption {
       flex-direction: column;
       align-items: flex-start;
+    }
+
+    .img-rec-page .metrics-grid {
+      grid-template-columns: 1fr;
     }
   }
 </style>
@@ -660,8 +877,8 @@
 {% block content %}
 <div class="content img-rec-page">
   <div class="row">
-    <div class="col-12 col-xl-7">
-      <div class="card hero-card">
+    <div class="col-12">
+      <div class="card hero-card workspace-card">
         <div class="card-header">
           <span class="hero-kicker">Reconhecimento de Imagem</span>
           <h2 class="card-title mb-0">Classificação de biomassa por imagem</h2>
@@ -669,81 +886,69 @@
         <div class="card-body">
           <div class="hero-copy">
             <p class="mb-0">
-              Envie uma imagem do fotobiorreator e execute a análise diretamente pelo dashboard,
-              sem sair do ambiente de monitoramento.
+              Envie uma imagem do fotobiorreator, confira o enquadramento e analise a biomassa sem sair do dashboard.
             </p>
           </div>
 
-          <div class="upload-zone" id="drop-zone">
-            <input type="file" id="file-input" accept="image/*">
-            <span class="upload-icon">
-              <i class="tim-icons icon-camera-18"></i>
-            </span>
-            <p><strong>Selecione ou arraste</strong> uma imagem do PBR</p>
-            <p class="upload-meta mb-0">JPEG ou PNG • imagens feitas pelo celular também funcionam</p>
-          </div>
-
-          <p class="helper-text mt-3 mb-0">
-            A imagem enviada será processada integralmente pelo classificador integrado ao dashboard.
-          </p>
-
-          <div class="actions-row">
-            <button class="btn analyze-btn" id="analyze-btn" disabled>
-              Analisar biomassa
-            </button>
-            <div class="loading-box" id="loading-box">
-              <span class="spinner"></span>
-              <span id="loading-text">Processando imagem...</span>
+          <div class="workspace-shell">
+            <div class="workspace-head">
+              <span class="section-kicker">Seleção da imagem</span>
+              <h3 class="card-title">Selecione a imagem para iniciar a análise</h3>
+              <p class="helper-text mb-0">
+                Escolha a imagem e, se quiser, arraste sobre o preview para delimitar apenas a área útil do fotobiorreator.
+              </p>
             </div>
-          </div>
 
-          <div class="feedback-box" id="feedback-box"></div>
-        </div>
-      </div>
-    </div>
+            <div class="upload-zone" id="drop-zone">
+              <input type="file" id="file-input" accept="image/*">
 
-    <div class="col-12 col-xl-5">
-      <div class="card support-card">
-        <div class="card-header">
-          <span class="section-kicker">Pré-visualização</span>
-          <h3 class="card-title mb-0">Visualização da imagem</h3>
-        </div>
-        <div class="card-body">
-          <div class="preview-panel">
-            <div class="preview-frame">
-              <div class="preview-empty" id="preview-empty">
-                <i class="tim-icons icon-camera-18"></i>
-                <div>
-                  <strong>Pré-visualização da imagem</strong>
-                  <p class="mb-0 mt-1">A imagem selecionada aparecerá inteira aqui, sem cortes.</p>
-                </div>
+              <div class="upload-zone-empty" id="upload-empty">
+                <span class="upload-icon">
+                  <i class="tim-icons icon-camera-18"></i>
+                </span>
+                <p><strong>Selecione ou arraste</strong> uma imagem do PBR</p>
+                <p class="upload-meta mb-0">JPEG ou PNG • imagens feitas pelo celular também funcionam</p>
               </div>
 
               <div class="preview-wrap" id="preview-wrap">
-                <img class="preview-img" id="preview-img" src="" alt="Preview da imagem enviada">
+                <div class="preview-canvas" id="preview-canvas">
+                  <img class="preview-img" id="preview-img" src="" alt="Pré-visualização da imagem enviada">
+                  <div class="roi-layer" id="roi-layer">
+                    <div class="roi-selection" id="roi-selection"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="preview-caption" id="preview-caption">
+                <div class="preview-caption-meta">
+                  <span id="preview-name">Nenhum arquivo selecionado</span>
+                  <span id="preview-size"></span>
+                  <span class="preview-roi-status" id="preview-roi-status">Área de leitura: imagem inteira</span>
+                </div>
+                <div class="preview-caption-actions">
+                  <button class="preview-secondary-btn is-hidden" id="clear-roi-btn" type="button">Usar imagem inteira</button>
+                  <button class="preview-remove-btn" id="remove-image-btn" type="button" aria-label="Remover imagem" title="Remover imagem">&times;</button>
+                </div>
+              </div>
+
+              <p class="roi-helper" id="roi-helper"></p>
+            </div>
+
+            <p class="helper-text mt-3 mb-0">
+              Revise enquadramento, foco e iluminação. Para leituras mais seguras, marque manualmente a região do reator quando houver muito fundo, reflexo ou ruído ao redor.
+            </p>
+
+            <div class="actions-row">
+              <button class="btn analyze-btn" id="analyze-btn" disabled>
+                Analisar biomassa
+              </button>
+              <div class="loading-box" id="loading-box">
+                <span class="spinner"></span>
+                <span id="loading-text">Processando imagem...</span>
               </div>
             </div>
 
-            <div class="preview-caption">
-              <span id="preview-name">Nenhum arquivo selecionado</span>
-              <span id="preview-size"></span>
-            </div>
-          </div>
-
-          <hr class="support-divider">
-
-          <div class="status-panel">
-            <p class="mb-0">
-              Use esta área para conferir a imagem antes de iniciar a análise.
-            </p>
-            <ol class="status-list">
-              <li>Selecione ou arraste uma imagem do fotobiorreator.</li>
-              <li>Revise a pré-visualização antes de iniciar a análise.</li>
-              <li>Execute a classificação e acompanhe o resultado logo abaixo.</li>
-            </ol>
-            <p class="result-meta mb-0">
-              A imagem é exibida integralmente para facilitar a validação visual antes do envio.
-            </p>
+            <div class="feedback-box" id="feedback-box"></div>
           </div>
         </div>
       </div>
@@ -753,48 +958,57 @@
   <div class="row">
     <div class="col-12">
       <div class="card result-card" id="result-card">
-        <div class="card-header">
-          <span class="section-kicker">Resultado</span>
-          <h3 class="card-title mb-0">Classificação retornada pelo modelo</h3>
-        </div>
         <div class="card-body">
-          <div class="result-top">
-            <div id="status-badge-wrap"></div>
-            <div>
-              <div class="result-meta">Confiança principal</div>
-              <div class="confidence-value" id="confidence-value">--</div>
-            </div>
-          </div>
-
-          <div class="metrics-grid" id="features-grid"></div>
-
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4 class="card-title mb-0">Probabilidades por classe</h4>
-            <span class="result-meta" id="result-id">Amostra: --</span>
-          </div>
-
-          <div class="probability-list" id="prob-bars"></div>
-
-          <div class="labeling-box">
-            <h4 class="card-title">Correção manual do rótulo</h4>
-            <p class="result-meta mb-0">
-              Se a predição estiver incorreta, selecione a classe correta e salve o rótulo para uso supervisionado.
-            </p>
-
-            <div class="class-buttons" id="class-btns">
-              <button class="class-btn" data-class="Baixa" type="button">Baixa</button>
-              <button class="class-btn" data-class="Media" type="button">Media</button>
-              <button class="class-btn" data-class="Alta" type="button">Alta</button>
-              <button class="class-btn" data-class="Sedimentacao" type="button">Sedimentação</button>
+          <div class="result-shell">
+            <div class="workspace-head">
+              <span class="section-kicker">Resultado</span>
+              <h3 class="card-title">Classificação retornada pelo modelo</h3>
+              <p class="helper-text mb-0">
+                Veja a classe prevista, confira a confiança principal e revise os indicadores antes de salvar um rótulo manual.
+              </p>
             </div>
 
-            <div class="labeling-actions">
-              <button class="btn btn-info" id="save-label-btn" type="button" disabled>
-                Salvar rótulo manual
-              </button>
-              <button class="btn retrain-btn" id="retrain-btn" type="button">
-                Retreinar modelo
-              </button>
+            <div class="result-summary">
+              <div class="result-top">
+                <div id="status-badge-wrap"></div>
+                <div>
+                  <div class="result-meta">Confiança principal</div>
+                  <div class="confidence-value" id="confidence-value">--</div>
+                  <div class="result-meta mt-2" id="roi-mode">Área de leitura: imagem inteira</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="metrics-grid" id="features-grid"></div>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h4 class="card-title mb-0">Probabilidades por classe</h4>
+              <span class="result-meta" id="result-id">Amostra: --</span>
+            </div>
+
+            <div class="probability-list" id="prob-bars"></div>
+
+            <div class="labeling-box">
+              <h4 class="card-title">Correção manual do rótulo</h4>
+              <p class="result-meta mb-0">
+                Se a predição estiver incorreta, selecione a classe correta e salve o rótulo para uso supervisionado.
+              </p>
+
+              <div class="class-buttons" id="class-btns">
+                <button class="class-btn" data-class="Baixa" type="button">Baixa</button>
+                <button class="class-btn" data-class="Media" type="button">Media</button>
+                <button class="class-btn" data-class="Alta" type="button">Alta</button>
+                <button class="class-btn" data-class="Sedimentacao" type="button">Sedimentação</button>
+              </div>
+
+              <div class="labeling-actions">
+                <button class="btn btn-info" id="save-label-btn" type="button" disabled>
+                  Salvar rótulo manual
+                </button>
+                <button class="btn retrain-btn" id="retrain-btn" type="button">
+                  Retreinar modelo
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -813,10 +1027,18 @@
     const dropZone = document.getElementById("drop-zone");
     const analyzeBtn = document.getElementById("analyze-btn");
     const previewWrap = document.getElementById("preview-wrap");
-    const previewEmpty = document.getElementById("preview-empty");
+    const uploadEmpty = document.getElementById("upload-empty");
+    const previewCanvas = document.getElementById("preview-canvas");
     const previewImg = document.getElementById("preview-img");
+    const roiLayer = document.getElementById("roi-layer");
+    const roiSelection = document.getElementById("roi-selection");
     const previewName = document.getElementById("preview-name");
     const previewSize = document.getElementById("preview-size");
+    const previewRoiStatus = document.getElementById("preview-roi-status");
+    const previewCaption = document.getElementById("preview-caption");
+    const clearRoiBtn = document.getElementById("clear-roi-btn");
+    const roiHelper = document.getElementById("roi-helper");
+    const removeImageBtn = document.getElementById("remove-image-btn");
     const loadingBox = document.getElementById("loading-box");
     const feedbackBox = document.getElementById("feedback-box");
     const heroCard = document.querySelector(".hero-card");
@@ -825,6 +1047,7 @@
     const probBars = document.getElementById("prob-bars");
     const statusBadgeWrap = document.getElementById("status-badge-wrap");
     const confidenceValue = document.getElementById("confidence-value");
+    const roiMode = document.getElementById("roi-mode");
     const resultId = document.getElementById("result-id");
     const saveLabelBtn = document.getElementById("save-label-btn");
     const retrainBtn = document.getElementById("retrain-btn");
@@ -833,6 +1056,10 @@
     let selectedFile = null;
     let lastPredictionId = null;
     let selectedClass = null;
+    let previewUrl = null;
+    let currentRoi = null;
+    let roiDraft = null;
+    let activePointerId = null;
 
     const classMap = {
       Baixa: "badge-baixa",
@@ -842,10 +1069,10 @@
     };
 
     const featureLabels = {
-      mean_green_index: { label: "Green index", format: value => Number(value).toFixed(4) },
-      mean_gray: { label: "Gray mean", format: value => Number(value).toFixed(1) },
-      std_color: { label: "Std color", format: value => Number(value).toFixed(2) },
-      mean_hue: { label: "Hue mean", format: value => Number(value).toFixed(1) + "°" }
+      mean_green_index: { label: "Índice de verde", format: value => Number(value).toFixed(4) },
+      mean_gray: { label: "Média de cinza", format: value => Number(value).toFixed(1) },
+      std_color: { label: "Variação de cor", format: value => Number(value).toFixed(2) },
+      mean_hue: { label: "Média de matiz", format: value => Number(value).toFixed(1) + "°" }
     };
 
     ["dragover", "dragenter"].forEach(eventName => {
@@ -876,6 +1103,30 @@
       }
     });
 
+    previewImg.addEventListener("load", () => {
+      renderRoiSelection();
+      updateRoiHelper();
+      updatePreviewRoiStatus();
+    });
+
+    roiLayer.addEventListener("pointerdown", startRoiSelection);
+    window.addEventListener("pointermove", updateRoiSelection);
+    window.addEventListener("pointerup", finishRoiSelection);
+    clearRoiBtn.addEventListener("click", event => {
+      event.preventDefault();
+      event.stopPropagation();
+      currentRoi = null;
+      renderRoiSelection();
+      updateRoiHelper();
+      updatePreviewRoiStatus();
+    });
+
+    removeImageBtn.addEventListener("click", event => {
+      event.preventDefault();
+      event.stopPropagation();
+      clearSelectedFile();
+    });
+
     analyzeBtn.addEventListener("click", async () => {
       if (!selectedFile) {
         return;
@@ -883,6 +1134,12 @@
 
       const formData = new FormData();
       formData.append("imagem", selectedFile);
+      if (currentRoi) {
+        formData.append("roi_x", currentRoi.x.toFixed(6));
+        formData.append("roi_y", currentRoi.y.toFixed(6));
+        formData.append("roi_width", currentRoi.width.toFixed(6));
+        formData.append("roi_height", currentRoi.height.toFixed(6));
+      }
 
       setLoading(true);
       setFeedback("", "", { scrollTarget: null });
@@ -979,13 +1236,57 @@
       selectedFile = file;
       analyzeBtn.disabled = false;
 
-      previewImg.src = URL.createObjectURL(file);
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+
+      currentRoi = null;
+      lastPredictionId = null;
+      selectedClass = null;
+      saveLabelBtn.disabled = true;
+      classButtons.forEach(button => button.classList.remove("is-selected"));
+      resultCard.classList.remove("is-visible");
+      previewUrl = URL.createObjectURL(file);
+      previewImg.src = previewUrl;
+      dropZone.classList.add("is-filled");
       previewWrap.classList.add("is-visible");
-      previewEmpty.classList.add("is-hidden");
+      uploadEmpty.classList.add("is-hidden");
+      previewCaption.classList.add("is-visible");
       previewName.textContent = file.name;
       previewSize.textContent = formatBytes(file.size);
+      renderRoiSelection();
+      updateRoiHelper();
+      updatePreviewRoiStatus();
 
       setFeedback("", "");
+    }
+
+    function clearSelectedFile() {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+        previewUrl = null;
+      }
+
+      selectedFile = null;
+      previewImg.src = "";
+      fileInput.value = "";
+      dropZone.classList.remove("is-filled");
+      previewWrap.classList.remove("is-visible");
+      uploadEmpty.classList.remove("is-hidden");
+      previewCaption.classList.remove("is-visible");
+      previewName.textContent = "Nenhum arquivo selecionado";
+      previewSize.textContent = "";
+      currentRoi = null;
+      renderRoiSelection();
+      updateRoiHelper();
+      updatePreviewRoiStatus();
+      analyzeBtn.disabled = true;
+      resultCard.classList.remove("is-visible");
+      lastPredictionId = null;
+      selectedClass = null;
+      saveLabelBtn.disabled = true;
+      classButtons.forEach(button => button.classList.remove("is-selected"));
+      setFeedback("", "", { scrollTarget: null });
     }
 
     function setLoading(isLoading) {
@@ -1039,6 +1340,7 @@
       `;
 
       confidenceValue.textContent = `${(confidence * 100).toFixed(0)}%`;
+      roiMode.textContent = `Área de leitura: ${data.roi_modo === "manual" ? "seleção manual" : "imagem inteira"}`;
       resultId.textContent = `Amostra: ${data.id || "--"}`;
 
       const features = data.features || {};
@@ -1059,6 +1361,139 @@
           <div class="probability-value">${(Number(value) * 100).toFixed(0)}%</div>
         </div>
       `).join("");
+    }
+
+    function getPointerPosition(event) {
+      const rect = previewCanvas.getBoundingClientRect();
+      if (!rect.width || !rect.height) {
+        return null;
+      }
+
+      const x = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+      const y = Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height));
+      return { x, y };
+    }
+
+    function startRoiSelection(event) {
+      if (!selectedFile || event.button !== 0) {
+        return;
+      }
+
+      const point = getPointerPosition(event);
+      if (!point) {
+        return;
+      }
+
+      activePointerId = event.pointerId;
+      roiDraft = { startX: point.x, startY: point.y, endX: point.x, endY: point.y };
+      currentRoi = null;
+      renderRoiSelection();
+      updateRoiHelper();
+      updatePreviewRoiStatus();
+      roiLayer.setPointerCapture(event.pointerId);
+      event.preventDefault();
+    }
+
+    function updateRoiSelection(event) {
+      if (activePointerId !== event.pointerId || !roiDraft) {
+        return;
+      }
+
+      const point = getPointerPosition(event);
+      if (!point) {
+        return;
+      }
+
+      roiDraft.endX = point.x;
+      roiDraft.endY = point.y;
+      renderDraftSelection();
+    }
+
+    function finishRoiSelection(event) {
+      if (activePointerId !== event.pointerId || !roiDraft) {
+        return;
+      }
+
+      const point = getPointerPosition(event) || { x: roiDraft.endX, y: roiDraft.endY };
+      roiDraft.endX = point.x;
+      roiDraft.endY = point.y;
+
+      const x = Math.min(roiDraft.startX, roiDraft.endX);
+      const y = Math.min(roiDraft.startY, roiDraft.endY);
+      const width = Math.abs(roiDraft.endX - roiDraft.startX);
+      const height = Math.abs(roiDraft.endY - roiDraft.startY);
+
+      currentRoi = width >= 0.04 && height >= 0.04 ? { x, y, width, height } : null;
+      roiDraft = null;
+      if (roiLayer.hasPointerCapture(event.pointerId)) {
+        roiLayer.releasePointerCapture(event.pointerId);
+      }
+      activePointerId = null;
+      renderRoiSelection();
+      updateRoiHelper();
+      updatePreviewRoiStatus();
+    }
+
+    function renderDraftSelection() {
+      if (!roiDraft) {
+        return;
+      }
+
+      const x = Math.min(roiDraft.startX, roiDraft.endX);
+      const y = Math.min(roiDraft.startY, roiDraft.endY);
+      const width = Math.abs(roiDraft.endX - roiDraft.startX);
+      const height = Math.abs(roiDraft.endY - roiDraft.startY);
+
+      roiSelection.classList.add("is-visible");
+      roiSelection.style.left = `${x * 100}%`;
+      roiSelection.style.top = `${y * 100}%`;
+      roiSelection.style.width = `${width * 100}%`;
+      roiSelection.style.height = `${height * 100}%`;
+    }
+
+    function renderRoiSelection() {
+      if (!currentRoi) {
+        roiSelection.classList.remove("is-visible");
+        roiSelection.style.left = "";
+        roiSelection.style.top = "";
+        roiSelection.style.width = "";
+        roiSelection.style.height = "";
+        return;
+      }
+
+      roiSelection.classList.add("is-visible");
+      roiSelection.style.left = `${currentRoi.x * 100}%`;
+      roiSelection.style.top = `${currentRoi.y * 100}%`;
+      roiSelection.style.width = `${currentRoi.width * 100}%`;
+      roiSelection.style.height = `${currentRoi.height * 100}%`;
+    }
+
+    function updateRoiHelper() {
+      if (!selectedFile) {
+        roiHelper.classList.remove("is-visible");
+        roiHelper.textContent = "";
+        clearRoiBtn.disabled = true;
+        return;
+      }
+
+      roiHelper.classList.add("is-visible");
+      clearRoiBtn.disabled = !currentRoi;
+      roiHelper.textContent = currentRoi
+        ? "Área de leitura definida manualmente. Arraste novamente para ajustar ou limpe a seleção para usar a imagem inteira."
+        : "Arraste sobre a imagem para marcar a área do fotobiorreator. Se não marcar nada, a leitura usará a imagem inteira.";
+    }
+
+    function updatePreviewRoiStatus() {
+      if (!selectedFile) {
+        previewRoiStatus.textContent = "Área de leitura: imagem inteira";
+        clearRoiBtn.classList.add("is-hidden");
+        return;
+      }
+
+      previewRoiStatus.textContent = currentRoi
+        ? "Área de leitura: seleção manual ativa"
+        : "Área de leitura: imagem inteira";
+      clearRoiBtn.classList.toggle("is-hidden", !currentRoi);
     }
 
     function normalizeLabel(label) {
