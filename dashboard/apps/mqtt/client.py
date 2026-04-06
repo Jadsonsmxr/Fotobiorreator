@@ -1,11 +1,12 @@
 import json
+import os
 import paho.mqtt.client as mqtt
 from apps.services.sensor_service import SensorService
 
 
-MQTT_BROKER = "192.168.2.105"
-MQTT_PORT = 1883
-MQTT_TOPIC = "cba_fotobiorreator/sensors/+/data"
+MQTT_BROKER = os.getenv("MQTT_BROKER", "127.0.0.1")
+MQTT_PORT = int(os.getenv("MQTT_PORT", "1883"))
+MQTT_TOPIC = os.getenv("MQTT_TOPIC", "cba_fotobiorreator/sensors/+/data")
 
 
 
