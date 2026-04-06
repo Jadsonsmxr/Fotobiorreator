@@ -41,3 +41,8 @@ README_bk.md
 # biomass classifier generated files
 apps/biomass_classifier/artifacts/*.joblib
 apps/biomass_classifier/uploads/
+.env
+apps/biomass_classifier/data/roi_annotations_dataset.csv
+apps/biomass_classifier/data/manual_training_dataset.csv
+apps/biomass_classifier/data/biomass_classifier.sqlite3
+apps/db.sqlite3
