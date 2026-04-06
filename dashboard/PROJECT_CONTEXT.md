@@ -537,3 +537,5 @@ Foi alinhada a hierarquia visual entre a caixa de selecao de imagem e a caixa de
 - 2026-04-01: Foi esclarecido que `apps/mqtt/client.py` ainda mostra valores de MQTT porque eles ficaram como fallbacks de desenvolvimento no `os.getenv(...)`. O ambiente real agora vem do `.env`; os valores no codigo servem apenas como padrao quando as variaveis nao estiverem definidas.
 
 - 2026-04-02: Foi esclarecido que o projeto usa `socketio.run(...)` em `run.py` para execucao local, o que na pratica caracteriza o servidor de desenvolvimento do Flask/Flask-SocketIO. Para deploy, o repositório já aponta para Gunicorn em `Dockerfile` e `render.yaml`, embora a compatibilidade final com Socket.IO precise ser considerada no ambiente de producao.
+
+- 2026-04-06: Ajustado o tamanho da tipografia da sidebar em `static/assets/css/custom.css` para reduzir excesso visual e melhorar a proporcao dos itens de navegacao.
