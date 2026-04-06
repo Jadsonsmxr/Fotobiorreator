@@ -386,7 +386,7 @@ Variáveis esperadas:
 
 ## Pontos de atenção atuais
 
-- a configuração de MQTT agora pode ser feita por ambiente via `.env` (`MQTT_BROKER`, `MQTT_PORT`, `MQTT_TOPIC`), mas ainda vale evoluir o tratamento de falha de conexão no boot;
+- a configuração de MQTT agora pode ser feita por ambiente via `.env` (`MQTT_ENABLED`, `MQTT_REQUIRED`, `MQTT_BROKER`, `MQTT_PORT`, `MQTT_TOPIC`);
 - se o broker MQTT estiver indisponível no boot, a aplicação pode falhar antes de subir o servidor;
 - o módulo de biomassa usa persistência local própria além do banco principal do projeto;
 - o retreino depende de um volume mínimo de amostras rotuladas;

@@ -4,6 +4,8 @@ import paho.mqtt.client as mqtt
 from apps.services.sensor_service import SensorService
 
 
+MQTT_ENABLED = os.getenv("MQTT_ENABLED", "true").lower() == "true"
+MQTT_REQUIRED = os.getenv("MQTT_REQUIRED", "false").lower() == "true"
 MQTT_BROKER = os.getenv("MQTT_BROKER", "127.0.0.1")
 MQTT_PORT = int(os.getenv("MQTT_PORT", "1883"))
 MQTT_TOPIC = os.getenv("MQTT_TOPIC", "cba_fotobiorreator/sensors/+/data")
@@ -52,10 +54,27 @@ def on_message(client, userdata, msg):
 
 
 def start_mqtt(app):
+    if not MQTT_ENABLED:
+        app.logger.warning("MQTT desabilitado por configuracao de ambiente.")
+        return None
+
     client = mqtt.Client(userdata={"app": app})
     client.on_connect = on_connect
     client.on_message = on_message
 
-    client.connect(MQTT_BROKER, MQTT_PORT, 60)
-    client.loop_start()
-    app.logger.info("MQTT client started and connected to broker.")
+    try:
+        client.connect(MQTT_BROKER, MQTT_PORT, 60)
+        client.loop_start()
+        app.logger.info(f"MQTT client iniciado em {MQTT_BROKER}:{MQTT_PORT}.")
+        return client
+    except Exception as error:
+        message = (
+            f"Nao foi possivel conectar ao broker MQTT em {MQTT_BROKER}:{MQTT_PORT}. "
+            f"Detalhe: {error}"
+        )
+        if MQTT_REQUIRED:
+            raise RuntimeError(message) from error
+
+        app.logger.warning(message)
+        app.logger.warning("A aplicacao continuara em execucao sem ingestao MQTT.")
+        return None

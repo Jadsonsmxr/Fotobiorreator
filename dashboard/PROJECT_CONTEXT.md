@@ -539,3 +539,9 @@ Foi alinhada a hierarquia visual entre a caixa de selecao de imagem e a caixa de
 - 2026-04-02: Foi esclarecido que o projeto usa `socketio.run(...)` em `run.py` para execucao local, o que na pratica caracteriza o servidor de desenvolvimento do Flask/Flask-SocketIO. Para deploy, o repositório já aponta para Gunicorn em `Dockerfile` e `render.yaml`, embora a compatibilidade final com Socket.IO precise ser considerada no ambiente de producao.
 
 - 2026-04-06: Ajustado o tamanho da tipografia da sidebar em `static/assets/css/custom.css` para reduzir excesso visual e melhorar a proporcao dos itens de navegacao.
+
+- 2026-04-06: Foi feita uma orientacao estrategica de proximo foco do projeto. A recomendacao atual e priorizar consolidacao antes de expansao: estabilizar configuracao/servicos, revisar fluxo fim a fim da `img_rec`, melhorar confiabilidade do classificador e so depois ampliar funcionalidades ou partir para deploy completo.
+
+- 2026-04-06: Foi definido um plano priorizado de curto prazo em tres frentes: (1) confiabilidade do sistema e ambiente, (2) fechamento funcional da `img_rec` ponta a ponta, e (3) melhoria da qualidade do classificador e do dataset. Tambem foi sugerido usar no Trello um topico macro focado em consolidacao da base antes de expansao.
+
+- 2026-04-06: O boot do dashboard foi tornado mais resiliente ao MQTT. `apps/mqtt/client.py` agora respeita `MQTT_ENABLED` e `MQTT_REQUIRED`, permitindo subir a aplicacao sem broker quando desejado e falhar explicitamente apenas quando configurado como obrigatorio.
