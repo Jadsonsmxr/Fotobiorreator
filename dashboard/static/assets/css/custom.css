@@ -79,3 +79,51 @@
     height: auto;
    
 }
+
+
+@keyframes pendingPulse {
+    0%, 100% {
+        opacity: 0.45;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+
+.KPI-value.is-pending-data {
+    color: rgba(255, 255, 255, 0.72);
+    animation: pendingPulse 1.4s ease-in-out infinite;
+}
+
+body.white-content .KPI-value.is-pending-data {
+    color: rgba(32, 38, 57, 0.5);
+}
+
+.gauge-placeholder-host {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 220px;
+    height: 100%;
+    padding-bottom: 0.35rem;
+}
+
+.gauge-placeholder {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 3.2rem;
+    font-size: 2.35rem;
+    line-height: 1;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: rgba(255, 255, 255, 0.72);
+    animation: pendingPulse 1.4s ease-in-out infinite;
+}
+
+body.white-content .gauge-placeholder {
+    color: rgba(32, 38, 57, 0.45);
+}
+
+
