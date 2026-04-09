@@ -49,3 +49,7 @@ class SensorService:
     @staticmethod
     def sensor_exists(sensor_id):
         return db.session.get(Sensor, sensor_id) is not None
+
+    @staticmethod
+    def get_sensor(sensor_id):
+        return db.session.get(Sensor, sensor_id)

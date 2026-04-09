@@ -47,12 +47,12 @@ function updateKPI(kpis) {
 }
 
 function initRealtimeDashboard() {
-  const socket = io("http://127.0.0.1:5000", {
+  const socket = io({
     transports: ["websocket"]
   });
 
   socket.on("connect", () => {
-    console.log("WebSocket conectado");
+    // conexao estabelecida; o snapshot inicial vem do backend no proprio connect
   });
 
   socket.on("sensor_update", (data) => {
@@ -63,9 +63,14 @@ function initRealtimeDashboard() {
       updateKPI(data);
   });
 
-  window.addEventListener("beforeunload", () => {
-    socket.disconnect();
-  });
+  const disconnectSocket = () => {
+    if (socket.connected) {
+      socket.disconnect();
+    }
+  };
+
+  window.addEventListener("pagehide", disconnectSocket, { once: true });
+  window.addEventListener("beforeunload", disconnectSocket, { once: true });
 }
 
 

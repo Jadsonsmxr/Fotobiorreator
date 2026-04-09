@@ -215,7 +215,7 @@ function createLineChart(canvasId, labels, dataset_label, data, color, options, 
 
 const configco2 = {
   "id": "gaugeco2",
-  "value": 445,
+  "value": 200,
   "min": 200,
   "max": 1000,
   "decimals": 1,
@@ -263,7 +263,7 @@ const configco2 = {
 
 const configph = {
   "id": "gaugeph",
-  "value": 7.4383517856623955,
+  "value": 0,
   "min": 0,
   "max": 14,
   "decimals": 1,
@@ -311,7 +311,7 @@ const configph = {
 
 const configTemperature = {
   "id": "gaugeTemperature",
-  "value": 32,
+  "value": 10,
   "min": 10,
   "max": 50,
   "decimals": 1,
@@ -360,7 +360,7 @@ const configTemperature = {
 
 const configLuminosity = {
   "id": "gaugeLuminosity",
-  "value": 712,
+  "value": 0,
   "min": 0,
   "max": 1000,
   "decimals": 1,
@@ -406,6 +406,84 @@ const configLuminosity = {
   "shadowVerticalOffset": 3
 }
 
+
+function getGaugeThemeColors() {
+    const isLightMode = document.body.classList.contains("white-content");
+
+    return isLightMode ? {
+        gaugeColor: "#ffffff",
+        valueFontColor: "#000000",
+        labelFontColor: "#666666"
+    } : {
+        gaugeColor: "#1e1e2f",
+        valueFontColor: "#bdbdbdff",
+        labelFontColor: "#787878ff"
+    };
+}
+
+function applyGaugeThemeColors() {
+    const colors = getGaugeThemeColors();
+
+    [configco2, configph, configTemperature, configLuminosity].forEach(config => {
+        config.gaugeColor = colors.gaugeColor;
+        config.valueFontColor = colors.valueFontColor;
+        config.labelFontColor = colors.labelFontColor;
+    });
+
+    return colors;
+}
+
+const gaugeRegistry = {
+    gaugeCo2: configco2,
+    gaugePh: configph,
+    gaugeTemperature: configTemperature,
+    gaugeLuminosity: configLuminosity,
+};
+
+function renderGaugePlaceholder(config) {
+    const container = document.getElementById(config.id);
+    if (!container) {
+        return;
+    }
+
+    container.classList.add("gauge-placeholder-host");
+    container.innerHTML = '<div class="gauge-placeholder" aria-hidden="true">--</div>';
+}
+
+function createGaugeInstance(config, value) {
+    const container = document.getElementById(config.id);
+    if (!container) {
+        return null;
+    }
+
+    container.classList.remove("gauge-placeholder-host");
+    container.innerHTML = "";
+
+    return new JustGage({
+        ...config,
+        value,
+    });
+}
+
+export function ensureDashboardGauge(gaugeName, initialValue = null) {
+    const config = gaugeRegistry[gaugeName];
+    if (!config) {
+        return null;
+    }
+
+    const existingGauge = window[gaugeName];
+    if (existingGauge && typeof existingGauge.refresh === "function") {
+        return existingGauge;
+    }
+
+    applyGaugeThemeColors();
+    window[gaugeName] = createGaugeInstance(
+        config,
+        initialValue ?? config.min ?? 0
+    );
+    return window[gaugeName];
+}
+
 // ========================================
 // FUNÇÃO PRINCIPAL DE INICIALIZAÇÃO
 // ========================================
@@ -428,11 +506,18 @@ export function initDashboardPageCharts() {
     // this.createLineChart("chartTemperature", chart_labels_5min_co2, 'Temperatura', chart_data_5min_co2, 'rgba(214, 180, 0, 1)', gradientChartOptionsConfigurationWithTooltipTemperature)
     // this.createLineChart("chartLuminosity", chart_labels_5min_co2, 'Luminosidade', chart_data_5min_co2, 'rgba(255, 255, 255, 1)', gradientChartOptionsConfigurationWithTooltipLuminosity)
 
-    // Cria os gauges e armazena em variáveis globais
-    window.gaugeCo2 = new JustGage(configco2);
-    window.gaugePh = new JustGage(configph);
-    window.gaugeTemperature = new JustGage(configTemperature);
-    window.gaugeLuminosity = new JustGage(configLuminosity);
+    applyGaugeThemeColors();
+
+    // Deixa os containers em estado neutro ate a primeira leitura real.
+    renderGaugePlaceholder(configco2);
+    renderGaugePlaceholder(configph);
+    renderGaugePlaceholder(configTemperature);
+    renderGaugePlaceholder(configLuminosity);
+
+    window.gaugeCo2 = null;
+    window.gaugePh = null;
+    window.gaugeTemperature = null;
+    window.gaugeLuminosity = null;
     
     // Elementos de KPIs
     window.elementoCo2Total = document.getElementById("co2-total");
@@ -449,31 +534,14 @@ export function initDashboardPageCharts() {
 // ========================================
 
 function updateGaugeColors() {
-    console.log('=== updateGaugeColors chamada! ===');
-    
-    const isLightMode = $('body').hasClass('white-content');
-    console.log('Modo claro?', isLightMode);
-    
-    const colors = isLightMode ? {
-        gaugeColor: "#ffffff",
-        valueFontColor: "#000000",
-        labelFontColor: "#666666"
-    } : {
-        gaugeColor: "#1e1e2f",
-        valueFontColor: "#bdbdbdff",
-        labelFontColor: "#787878ff"
-    };
-    
-    console.log('Cores escolhidas:', colors);
-    
+    const colors = applyGaugeThemeColors();
+
     // Função para RECRIAR o gauge com novas cores
     function recreateGauge(gaugeObj, config, name) {
         if (!gaugeObj || !config) {
-            console.warn(`✗ ${name} não existe`);
             return null;
         }
         
-        console.log(`Recriando ${name}...`);
         
         // Pega o valor atual
         const currentValue = gaugeObj.config.value;
@@ -494,7 +562,6 @@ function updateGaugeColors() {
         }
         
         // Recria o gauge
-        console.log(`✓ ${name} recriado`);
         return new JustGage(newConfig);
     }
     
@@ -504,7 +571,6 @@ function updateGaugeColors() {
     window.gaugeTemperature = recreateGauge(window.gaugeTemperature, configTemperature, 'Temperature');
     window.gaugeLuminosity = recreateGauge(window.gaugeLuminosity, configLuminosity, 'Luminosity');
     
-    console.log('=== updateGaugeColors finalizada! ===');
 }
 
 // Exporta a função para ser usada externamente

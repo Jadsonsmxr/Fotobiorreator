@@ -138,9 +138,9 @@ $(document).ready(function () {
         $('body').removeClass('white-content');
     }
     syncThemeSwitch();
-    setTimeout(function() {
+    requestAnimationFrame(function() {
         refreshDashboardGaugeColors();
-    }, 1000);
+    });
 
     $('.switch input').on("change", function () {
         light_color = localStorage.getItem("light_color");

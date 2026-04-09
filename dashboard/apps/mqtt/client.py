@@ -1,7 +1,11 @@
 import json
 import os
+
 import paho.mqtt.client as mqtt
+
+from apps.services.realtime_processing_service import RealtimeProcessingService
 from apps.services.sensor_service import SensorService
+from apps.websocket import emit_kpi_update, emit_sensor_update
 
 
 MQTT_ENABLED = os.getenv("MQTT_ENABLED", "true").lower() == "true"
@@ -10,47 +14,76 @@ MQTT_BROKER = os.getenv("MQTT_BROKER", "127.0.0.1")
 MQTT_PORT = int(os.getenv("MQTT_PORT", "1883"))
 MQTT_TOPIC = os.getenv("MQTT_TOPIC", "cba_fotobiorreator/sensors/+/data")
 
+MQTT_CONNECT_ERRORS = {
+    1: "versao de protocolo incorreta",
+    2: "identificador de cliente invalido",
+    3: "servidor indisponivel",
+    4: "usuario ou senha invalidos",
+    5: "nao autorizado",
+}
 
 
 def on_connect(client, userdata, flags, rc):
-    client.subscribe(MQTT_TOPIC)
     app = userdata["app"]
+
+    if rc != 0:
+        reason = MQTT_CONNECT_ERRORS.get(rc, f"codigo {rc}")
+        app.logger.error(f"MQTT: conexao recusada ({reason}).")
+        return
+
+    client.subscribe(MQTT_TOPIC)
     app.logger.info(f"MQTT conectado. Subscrito em: {MQTT_TOPIC}")
+
+
+def on_disconnect(client, userdata, rc):
+    app = userdata["app"]
+
+    if rc == 0:
+        app.logger.info("MQTT desconectado com encerramento normal.")
+        return
+
+    app.logger.warning(f"MQTT desconectado inesperadamente (rc={rc}).")
 
 
 def on_message(client, userdata, msg):
     app = userdata["app"]
-    
+
     try:
         payload = json.loads(msg.payload.decode())
 
         sensor_id = payload.get("sensor_id")
         value = payload.get("value")
-        
+
         if sensor_id is None or value is None:
-            app.logger.warning(f"MQTT: Payload inválido em {msg.topic}: {payload}")
+            app.logger.warning(f"MQTT: payload invalido em {msg.topic}: {payload}")
             return
 
         with app.app_context():
-            if not SensorService.sensor_exists(sensor_id):
-                app.logger.warning(f"MQTT: Sensor ID {sensor_id} não existe no banco. Leitura ignorada.")
+            sensor = SensorService.get_sensor(sensor_id)
+            if sensor is None:
+                app.logger.warning(f"MQTT: sensor {sensor_id} nao encontrado. Leitura ignorada.")
                 return
 
-            SensorService.add_reading(
-                sensor_id=sensor_id,
-                value=value
+            processed = RealtimeProcessingService.process_sensor_reading(sensor, value)
+            if not processed["accepted"]:
+                app.logger.warning(
+                    f"MQTT: leitura descartada para sensor {sensor_id} "
+                    f"({processed['reason']}). valor={processed['raw_value']}"
+                )
+                return
+
+            reading = SensorService.add_reading(sensor_id=sensor_id, value=processed["value"])
+            emit_sensor_update(sensor, reading, processed)
+            emit_kpi_update()
+
+            app.logger.info(
+                f"MQTT: leitura aceita para sensor {sensor_id} value={processed['value']}"
             )
-            app.logger.info(f"MQTT: ✓ Sensor {sensor_id} = {value}")
-            
-    except json.JSONDecodeError as e:
-        app.logger.error(f"MQTT: Erro ao decodificar JSON: {e}")
-    except Exception as e:
-        app.logger.error(f"MQTT: Erro ao processar mensagem: {e}")
-        
 
-       
-
-
+    except json.JSONDecodeError as error:
+        app.logger.error(f"MQTT: erro ao decodificar JSON em {msg.topic}: {error}")
+    except Exception:
+        app.logger.exception("MQTT: erro inesperado ao processar mensagem.")
 
 
 def start_mqtt(app):
@@ -60,6 +93,7 @@ def start_mqtt(app):
 
     client = mqtt.Client(userdata={"app": app})
     client.on_connect = on_connect
+    client.on_disconnect = on_disconnect
     client.on_message = on_message
 
     try:

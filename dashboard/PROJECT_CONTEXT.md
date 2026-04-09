@@ -545,3 +545,53 @@ Foi alinhada a hierarquia visual entre a caixa de selecao de imagem e a caixa de
 - 2026-04-06: Foi definido um plano priorizado de curto prazo em tres frentes: (1) confiabilidade do sistema e ambiente, (2) fechamento funcional da `img_rec` ponta a ponta, e (3) melhoria da qualidade do classificador e do dataset. Tambem foi sugerido usar no Trello um topico macro focado em consolidacao da base antes de expansao.
 
 - 2026-04-06: O boot do dashboard foi tornado mais resiliente ao MQTT. `apps/mqtt/client.py` agora respeita `MQTT_ENABLED` e `MQTT_REQUIRED`, permitindo subir a aplicacao sem broker quando desejado e falhar explicitamente apenas quando configurado como obrigatorio.
+
+- 2026-04-06: Fechamento funcional inicial da `img_rec` revisado. Ajustes aplicados no template para deixar o fluxo ponta a ponta mais confiável: título da página padronizado em português, rótulo visual de `Média` corrigido, parsing de respostas HTTP endurecido com fallback para respostas inválidas, botão de salvar rótulo desabilitado após sucesso e, principalmente, invalidação automática do resultado anterior quando a ROI é alterada ou removida, evitando exibição de análise stale para uma área de leitura diferente.
+
+- 2026-04-06: A UX da `img_rec` foi refinada para separar feedback global e feedback local. A análise principal continua usando o `feedback-box` do card superior, mas salvar rótulo manual e retreinar modelo passaram a exibir retorno no próprio bloco de resultado, evitando scroll automático para o topo e preservando o contexto da ação para o usuário.
+
+- 2026-04-06: A `img_rec` ganhou reenquadramento automático do workspace após seleção de imagem. Quando o preview carrega e altera a altura do bloco, a página agora faz scroll suave para recentrar a área relevante, priorizando a ação principal em telas compactas e evitando que o botão de analisar fique fora de vista após uploads com proporções diferentes.
+
+- 2026-04-06: As notificacoes da `img_rec` foram refinadas para ficar mais semanticas e contextuais. O card superior agora usa titulos curtos para sucesso e falha da analise, enquanto o bloco de resultado ganhou feedbacks locais com cabecalho e mensagem propriamente separados para salvar rotulo e retreinar modelo, melhorando clareza e leitura visual.
+
+- 2026-04-06: A estrategia de notificacao da `img_rec` foi alterada para um modelo hibrido. Sucessos de analise, salvamento de rotulo e retreino passaram a usar toasts fixos no viewport, evitando competir com o scroll automatico para o resultado. Erros continuam inline nos blocos relevantes para preservar contexto e permanencia visual.
+
+- 2026-04-06: A estrategia de notificacao da `img_rec` foi refinada novamente. O toast de sucesso da analise foi removido porque o proprio bloco de resultado ja confirma a acao visualmente. Sucessos de salvar rotulo manual e retreinar modelo voltaram para o feedback local logo abaixo dos botoes da area de correcao, reduzindo deslocamento visual e mantendo a confirmacao perto da origem da interacao.
+
+- 2026-04-06: O scroll de exibicao do resultado na `img_rec` foi refinado para recentrar melhor o bloco apos a analise. Em vez de ancorar no topo do card, o template agora espera a expansao do conteudo e reenquadra a area de resultado no centro do viewport, com alvo diferente para telas compactas e maiores, reduzindo o efeito de bloco cortado.
+
+- 2026-04-06: A confirmacao de sucesso para salvar rotulo manual e retreinar modelo foi movida novamente para toasts no canto inferior direito da viewport. A ideia foi evitar depender do enquadramento do bloco de resultado para mensagens curtas de confirmacao, mantendo o aparecimento do resultado como confirmacao suficiente para a analise principal e deixando erros ainda inline no contexto da acao.
+
+- 2026-04-06: O visual do toast de sucesso no canto inferior direito da `img_rec` foi refinado para uma paleta mais viva, reduzindo a sensacao de bloco escuro demais. O gradiente passou a dialogar melhor com o verde/ciano da interface, com contraste mais claro no icone e na mensagem, inclusive no tema claro.
+
+- 2026-04-06: O toast de sucesso da `img_rec` foi simplificado visualmente para fundo solido, sem gradiente. A intencao foi deixar a confirmacao mais limpa e menos chamativa, mantendo a paleta verde viva mas com aspecto mais elegante e coerente com o restante da interface.
+
+- 2026-04-07: Foi corrigido o atraso visual na troca de cor dos gauges ao navegar entre paginas no tema branco. A cor do tema passou a ser aplicada ja na configuracao inicial dos gauges em `dashboard.js`, e o refresh tardio de 1 segundo em `themeSettings.js` foi substituido por um `requestAnimationFrame`, reduzindo o flash de gauges escuros antes da paleta clara.
+
+- 2026-04-07: Foi diagnosticado que a defasagem percebida nos gauges nao vem do componente JustGage, e sim da estrategia atual de emissao realtime. Em `apps/websocket.py`, a funcao `emitir_periodicamente` consulta o banco e reemite leituras apenas a cada 5 segundos (`socketio.sleep(5)`), o que introduz atraso visivel mesmo quando o MQTT grava rapidamente no banco. O loop ainda recalcula KPIs dentro da iteracao de cada sensor, aumentando custo e redundancia de emissao.
+
+- 2026-04-07: Foi alinhada a direcao arquitetural para o realtime dos sensores: substituir o polling pesado de 5 segundos por emissao mais imediata apos o MQTT, mas sem enviar leituras cruas diretamente ao frontend. A recomendacao e introduzir uma pequena camada de processamento/validacao entre ingestao e emissao, com regras para valores invalidos, outliers, smoothing opcional e sinalizacao de qualidade do dado antes de atualizar gauges e KPIs.
+
+- 2026-04-07: Revisao da etapa de realtime: o problema percebido ao recarregar ou trocar de pagina nao era principalmente a latencia MQTT->WebSocket, e sim a inicializacao dos gauges com valores mockados fixos em `dashboard.js` (ex.: 445, 32, 712), que ficam visiveis ate a chegada do primeiro dado real. Ficou alinhado que a cor dos gauges deve continuar nascendo correta, mas que a proxima simplificacao desejavel e remover/mock values do bootstrap do dashboard e substitui-los por estado neutro ou snapshot inicial real. A camada de processamento realtime e util para robustez, mas nao resolve esse sintoma especifico de primeira pintura.
+
+- 2026-04-07: Simplificacao do bootstrap do dashboard alinhada com a filosofia de codigo simples e funcional. Os gauges deixaram de nascer com alguns valores mockados arbitrarios mais chamativos e o backend passou a emitir um snapshot inicial real no evento de conexao Socket.IO, reduzindo a janela em que o usuario ve dados ficticios ao recarregar ou navegar de volta para a dashboard.
+
+- revisao de simplicidade do realtime: o principal problema visual dos gauges ao trocar de pagina nao era latencia do banco, e sim bootstrap com valores mockados; a correcao passou a usar snapshot inicial via websocket e estado visual neutro "Aguardando leitura" ate a primeira leitura real, evitando numeros enganosos no carregamento.
+
+- 2026-04-07: A tentativa de introduzir um estado visual de gauges pendentes com overlay de "Aguardando leitura" foi revertida por gerar ruído e comportamento visual bugado. A direcao voltou para uma abordagem mais simples: manter o snapshot inicial via Socket.IO e evitar complexidade extra no frontend sempre que possivel.
+
+- 2026-04-07: O bootstrap visual do dashboard foi simplificado para evitar numeros falsos na primeira pintura. KPIs agora nascem com `--` e classe de carregamento; os gauges exibem apenas um placeholder neutro e o componente JustGage so e criado quando chega a primeira leitura real via Socket.IO.
+
+- 2026-04-07: Foi refinado o alinhamento visual dos placeholders `--` nos gauges do dashboard, ajustando largura, altura util e centralizacao dentro da `chart-area` para evitar que o estado neutro parecesse deslocado no card.
+
+- 2026-04-07: Foi criado o arquivo `REALTIME_WORKFLOW.md` para acompanhar manualmente a consolidacao do pipeline de dados em tempo real. A combinacao alinhada e manter esse arquivo sempre atualizado com seta de progresso nas etapas, junto das mudancas feitas nessa frente.
+
+- 2026-04-07: A etapa 1 da consolidacao do realtime foi fechada e registrada em `REALTIME_WORKFLOW.md`. O diagnostico atual e: snapshot inicial via Socket.IO e util e deve permanecer; o principal ponto em aberto agora e decidir se `apps/services/realtime_processing_service.py` fica como esta, e simplificado, ou sai para manter o pipeline mais enxuto.
+
+- 2026-04-07: A etapa 2 da consolidacao do realtime foi simplificada. `apps/services/realtime_processing_service.py` deixou de comparar leituras anteriores e de aplicar smoothing/classificacao `suspect`; agora faz apenas validacao minima e previsivel (numero, finitude e faixa basica por sensor). `apps/mqtt/client.py` tambem foi enxugado para emitir KPIs pelo helper de websocket e manter logs mais simples.
+
+- 2026-04-07: A etapa 3 da consolidacao do realtime foi fechada. O frontend passou a conectar o Socket.IO usando a origem atual da pagina em `static/assets/js/realtime.js`, com desconexao mais robusta em navegacao via `pagehide` e `beforeunload`. Tambem foi removida a emissao de KPIs mockados em `apps/services/kpi_service.py`, para que o estado neutro do dashboard so seja substituido quando houver dado real ou calculo real implementado.
+
+- 2026-04-07: A etapa 4 da consolidacao do realtime foi fechada. `apps/mqtt/client.py` ganhou tratamento mais claro para falhas de conexao e desconexao MQTT, mensagens de log mais objetivas para payload invalido e leitura descartada, e uso de `logger.exception` para erros inesperados. O fallback com `MQTT_REQUIRED=false` foi mantido como estrategia de degradacao segura.
+
+- 2026-04-07: A etapa 5 da consolidacao do realtime foi fechada. O resultado final desse ciclo foi: snapshot inicial mantido, bootstrap neutro para KPIs e gauges, validacao minima de leitura no pipeline e fallback previsivel para indisponibilidade do broker. Ficaram registrados como proximos passos reais a implementacao de KPIs calculados de verdade e a validacao ponta a ponta com dados MQTT reais.
