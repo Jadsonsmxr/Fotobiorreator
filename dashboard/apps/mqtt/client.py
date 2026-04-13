@@ -22,16 +22,41 @@ MQTT_CONNECT_ERRORS = {
     5: "nao autorizado",
 }
 
+MQTT_RUNTIME_STATE = {
+    "enabled": MQTT_ENABLED,
+    "required": MQTT_REQUIRED,
+    "broker": MQTT_BROKER,
+    "port": MQTT_PORT,
+    "topic": MQTT_TOPIC,
+    "status": "disabled" if not MQTT_ENABLED else "starting",
+    "label": "Desabilitado" if not MQTT_ENABLED else "Inicializando",
+    "detail": "MQTT desabilitado por configuracao de ambiente." if not MQTT_ENABLED else "Aguardando conexao com o broker.",
+    "last_error": None,
+}
+
+
+def _set_runtime_state(status, label, detail=None, last_error=None):
+    MQTT_RUNTIME_STATE["status"] = status
+    MQTT_RUNTIME_STATE["label"] = label
+    MQTT_RUNTIME_STATE["detail"] = detail
+    MQTT_RUNTIME_STATE["last_error"] = last_error
+
+
+def get_mqtt_runtime_status():
+    return dict(MQTT_RUNTIME_STATE)
+
 
 def on_connect(client, userdata, flags, rc):
     app = userdata["app"]
 
     if rc != 0:
         reason = MQTT_CONNECT_ERRORS.get(rc, f"codigo {rc}")
+        _set_runtime_state("error", "Falha na conexao", f"Broker recusou a conexao: {reason}.", reason)
         app.logger.error(f"MQTT: conexao recusada ({reason}).")
         return
 
     client.subscribe(MQTT_TOPIC)
+    _set_runtime_state("connected", "Conectado", f"Subscrito em {MQTT_TOPIC}.", None)
     app.logger.info(f"MQTT conectado. Subscrito em: {MQTT_TOPIC}")
 
 
@@ -39,9 +64,11 @@ def on_disconnect(client, userdata, rc):
     app = userdata["app"]
 
     if rc == 0:
+        _set_runtime_state("disconnected", "Desconectado", "Cliente MQTT encerrado normalmente.", None)
         app.logger.info("MQTT desconectado com encerramento normal.")
         return
 
+    _set_runtime_state("warning", "Desconectado", f"Desconexao inesperada do broker (rc={rc}).", f"rc={rc}")
     app.logger.warning(f"MQTT desconectado inesperadamente (rc={rc}).")
 
 
@@ -88,6 +115,7 @@ def on_message(client, userdata, msg):
 
 def start_mqtt(app):
     if not MQTT_ENABLED:
+        _set_runtime_state("disabled", "Desabilitado", "MQTT desabilitado por configuracao de ambiente.", None)
         app.logger.warning("MQTT desabilitado por configuracao de ambiente.")
         return None
 
@@ -99,6 +127,7 @@ def start_mqtt(app):
     try:
         client.connect(MQTT_BROKER, MQTT_PORT, 60)
         client.loop_start()
+        _set_runtime_state("starting", "Inicializando", f"Tentando conectar em {MQTT_BROKER}:{MQTT_PORT}.", None)
         app.logger.info(f"MQTT client iniciado em {MQTT_BROKER}:{MQTT_PORT}.")
         return client
     except Exception as error:
@@ -106,6 +135,7 @@ def start_mqtt(app):
             f"Nao foi possivel conectar ao broker MQTT em {MQTT_BROKER}:{MQTT_PORT}. "
             f"Detalhe: {error}"
         )
+        _set_runtime_state("error", "Indisponivel", message, str(error))
         if MQTT_REQUIRED:
             raise RuntimeError(message) from error
 
