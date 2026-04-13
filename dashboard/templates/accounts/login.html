@@ -1,114 +1,230 @@
 {% extends "layouts/base-fullscreen.html" %}
 
-{% block title %} Login {% endblock %} 
+{% block title %} Entrar {% endblock %}
 
-<!-- Specific Page CSS goes HERE  -->
-{% block stylesheets %}{% endblock stylesheets %}
+{% block stylesheets %}
+<style>
+  .auth-page {
+    min-height: calc(100vh - 140px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5.5rem 0 2rem;
+  }
+
+  .auth-panel {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(0, 242, 195, 0.12);
+    box-shadow: 0 18px 38px rgba(0, 0, 0, 0.22);
+  }
+
+  .auth-panel::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 3px;
+    background: linear-gradient(90deg, #00f2c3 0%, #03b653 100%);
+  }
+
+  .auth-panel .card-header,
+  .auth-panel .card-body,
+  .auth-panel .card-footer {
+    position: relative;
+    z-index: 1;
+  }
+
+  .auth-header {
+    padding-top: 2rem;
+  }
+
+  .auth-kicker {
+    display: inline-block;
+    margin-bottom: 0.75rem;
+    padding: 0.35rem 0.75rem;
+    border: 1px solid rgba(0, 242, 195, 0.18);
+    border-radius: 999px;
+    color: #00f2c3;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: rgba(0, 242, 195, 0.08);
+  }
+
+  .auth-panel .title {
+    margin-bottom: 0.35rem;
+  }
+
+  .auth-subtitle {
+    margin-bottom: 0;
+    color: rgba(255, 255, 255, 0.66);
+    font-size: 0.82rem;
+  }
+
+  .auth-panel label {
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 0.45rem;
+  }
+
+  .auth-panel .form-control {
+    border-color: rgba(0, 242, 195, 0.14);
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .auth-panel .form-control:focus {
+    border-color: rgba(0, 242, 195, 0.4);
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .auth-cta {
+    width: 100%;
+    border: 1px solid rgba(0, 242, 195, 0.24);
+    background: #0dbb74;
+    color: #ffffff;
+    box-shadow: 0 10px 22px rgba(3, 182, 83, 0.22);
+  }
+
+  .auth-cta:hover,
+  .auth-cta:focus {
+    background: #14c97d;
+    color: #ffffff;
+    box-shadow: 0 12px 24px rgba(3, 182, 83, 0.28);
+  }
+
+  .auth-links,
+  .auth-social-label {
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.62);
+  }
+
+  .auth-links a,
+  .auth-social-label strong {
+    color: #00f2c3;
+  }
+
+  .auth-social {
+    display: flex;
+    justify-content: center;
+    gap: 0.65rem;
+  }
+
+  .auth-social .btn {
+    min-width: 42px;
+  }
+
+  .white-content .auth-panel {
+    border-color: rgba(3, 182, 83, 0.12);
+    box-shadow: 0 16px 34px rgba(34, 42, 66, 0.08);
+  }
+
+.white-content .auth-kicker {
+    color: #087f5b;
+    border-color: rgba(3, 182, 83, 0.28);
+    background: rgba(3, 182, 83, 0.10);
+  }
+
+  .white-content .auth-subtitle,
+  .white-content .auth-links,
+  .white-content .auth-social-label {
+    color: rgba(34, 42, 66, 0.66);
+  }
+
+  .white-content .auth-panel label {
+    color: rgba(34, 42, 66, 0.72);
+  }
+
+  .white-content .auth-panel .form-control {
+    color: #222a42;
+    border-color: rgba(34, 42, 66, 0.12);
+    background: rgba(34, 42, 66, 0.02);
+  }
+
+  .white-content .auth-panel .form-control:focus {
+    border-color: rgba(3, 182, 83, 0.28);
+    background: rgba(34, 42, 66, 0.03);
+  }
+
+  .white-content .auth-links a,
+  .white-content .auth-social-label strong {
+    color: #03b653;
+  }
+</style>
+{% endblock stylesheets %}
 
 {% block content %}
+<div class="content auth-page">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-5 col-md-7">
+                <div class="card auth-panel">
+                    <div class="card-header text-center auth-header">
+                        <span class="auth-kicker">Acesso ao dashboard</span>
+                        <h4 class="title">Entrar</h4>
+                        <p class="auth-subtitle">
+                            {% if msg %}
+                              <span class="text-danger">{{ msg | safe }}</span>
+                            {% else %}
+                              Use suas credenciais para acessar o monitoramento do fotobiorreator.
+                            {% endif %}
+                        </p>
+                    </div>
 
-    <div class="content">
-        <div class="container">
-            <div class="row pt-5">
-                <div class="col-md-6 mt-5 offset-md-3 pt-5 mt-5">
-                    <div class="card">
-                        
-                        <div class="card-header text-center py-4">
-                            <h4 class="title">
-                                Sign IN
-                            </h4>
+                    <form role="form" method="post" action="">
+                        {{ form.hidden_tag() }}
 
-                            <h6 class="card-category">
-                                {% if msg %}
-                                  <span class="text-danger">{{ msg | safe }}</span>
-                                {% else %}
-                                <span>
-                                  Add your credentials
-                                </span>
-                                {% endif %}  
-                            </h6>
-                        </div>
-
-                        <form role="form" method="post" action="">
-                                
-                            {{ form.hidden_tag() }} 
-
-                            <div class="card-body px-5 py-3"> 
-
-                                <div class="row">
-                                    <div class="col-md-12 px-md-1">
-                                        <div class="form-group">
-                                            <label>Username</label>
-                                            {{ form.username(class="form-control", placeholder="Username") }}
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-12 px-md-1">
-                                        <div class="form-group">
-                                            <label>Password</label>
-                                            {{ form.password(class="form-control", type="password", placeholder="Password") }}
-                                        </div>
+                        <div class="card-body px-5 py-3">
+                            <div class="row">
+                                <div class="col-md-12 px-md-1">
+                                    <div class="form-group">
+                                        <label>Usuário</label>
+                                        {{ form.username(class="form-control", placeholder="Seu usuário") }}
                                     </div>
                                 </div>
 
-                                
-                            </div>
-                            
-                            <div class="card-footer text-center">
-                                <button type="submit" name="login" class="btn btn-fill btn-primary">Login</button>
-                                
-                                <br /><br />
-
-                                <p>
-                                    Don't have an account? <a href="{{ url_for('authentication_blueprint.register') }}" class="text-primary">Register</a>                            
-                                </p>
-                            </div>
-
-                            {% if has_github and has_google %}
-
-                                <div class="text-center">
-            
-                                <span class="text-muted">or Sign IN with</span> 
-                                    
-                                    <br />
-                                    <br />
-                                    
-                                    <div class="text-center mx-auto">
-            
-                                    {% if has_github %}
-                                        <a href="{{url_for('authentication_blueprint.login_github')}}" class="btn btn-github btn-sm">
-                                            <i class="fab fa-github"></i>
-                                        </a>
-                                    {% endif %}
-
-                                    {% if has_google %}
-                                        <a href="{{url_for('authentication_blueprint.login_google')}}" class="btn btn-google btn-sm">
-                                            <i class="fab fa-google"></i>
-                                        </a>
-                                    {% endif %}
-            
+                                <div class="col-md-12 px-md-1">
+                                    <div class="form-group mb-0">
+                                        <label>Senha</label>
+                                        {{ form.password(class="form-control", type="password", placeholder="Sua senha") }}
                                     </div>
-            
-                                </div>  
+                                </div>
+                            </div>
+                        </div>
 
-                                <br />
-        
-                            {% endif %}
+                        <div class="card-footer text-center pb-4">
+                            <button type="submit" name="login" class="btn btn-fill auth-cta">Entrar</button>
+                            <br><br>
+                            <p class="auth-links mb-0">
+                                Ainda não tem conta? <a href="{{ url_for('authentication_blueprint.register') }}">Criar conta</a>
+                            </p>
+                        </div>
 
-
-                        </form>
-
-                    </div>
+                        {% if has_github and has_google %}
+                        <div class="text-center pb-4 px-4">
+                            <span class="auth-social-label">ou entre com <strong>GitHub</strong> ou <strong>Google</strong></span>
+                            <br><br>
+                            <div class="auth-social">
+                                {% if has_github %}
+                                <a href="{{ url_for('authentication_blueprint.login_github') }}" class="btn btn-github btn-sm">
+                                    <i class="fab fa-github"></i>
+                                </a>
+                                {% endif %}
+                                {% if has_google %}
+                                <a href="{{ url_for('authentication_blueprint.login_google') }}" class="btn btn-google btn-sm">
+                                    <i class="fab fa-google"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </form>
                 </div>
-
             </div>
         </div>
-
     </div>
-
-    <br />
-
+</div>
 {% endblock content %}
-
-<!-- Specific Page JS goes HERE  -->
-{% block javascripts %}{% endblock javascripts %}
