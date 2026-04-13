@@ -1,31 +1,30 @@
 .sidebar,
 .off-canvas-sidebar {
-  background: #52b0f4;
-  background: linear-gradient(0deg, #52b0f4 0%, #03b653 100%);
-  height: calc(100vh - 90px);
-  /* width: 5%; */
+    background: #52b0f4;
+    background: linear-gradient(0deg, #52b0f4 0%, #03b653 100%);
+    height: calc(100vh - 90px);
+    /* width: 5%; */
 
 }
+
 .main-panel {
-  border-top:3px solid #03b653;
-  
+    border-top: 3px solid #03b653;
+
 }
 
 .sidebar .nav p,
 .off-canvas-sidebar .nav p {
-  font-size: 0.80rem;
-  font-weight: 500;
+    font-size: 0.80rem;
+    font-weight: 500;
 }
 
 @media (max-width: 991.98px) {
-  .sidebar .nav p,
-  .off-canvas-sidebar .nav p {
-    font-size: 0.94rem;
-  }
+
+    .sidebar .nav p,
+    .off-canvas-sidebar .nav p {
+        font-size: 0.94rem;
+    }
 }
-
-
-
 
 
 .KPI {
@@ -38,14 +37,14 @@
 }
 
 .KPI .KPI-value {
-    margin-bottom: 0px ; 
-    
+    margin-bottom: 0px;
+
 }
 
-.KPI .card-body .card-title{
+.KPI .card-body .card-title {
     margin-bottom: 5px;
     color: rgba(255, 255, 255, 0.6);
-    
+
 }
 
 .KPI .color-co2total {
@@ -77,14 +76,17 @@
 .card-chart .chart-area {
     min-height: 220px;
     height: auto;
-   
+
 }
 
 
 @keyframes pendingPulse {
-    0%, 100% {
+
+    0%,
+    100% {
         opacity: 0.45;
     }
+
     50% {
         opacity: 1;
     }
@@ -125,5 +127,3 @@ body.white-content .KPI-value.is-pending-data {
 body.white-content .gauge-placeholder {
     color: rgba(32, 38, 57, 0.45);
 }
-
-
