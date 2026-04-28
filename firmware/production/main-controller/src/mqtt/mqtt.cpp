@@ -15,7 +15,7 @@ const char* PASSWORD = "cba12345";
 // const char* PASSWORD = "12345678*";
 // const char* SSID = "Daniel celular";
 // const char* PASSWORD = "code2702";
-const char* BROKER_MQTT = "192.168.2.105";
+const char* BROKER_MQTT = "192.168.2.104";
 const int BROKER_PORT = 1883;
 const char* ID_MQTT = "esp32_mqtt_fotobiorreator_cba";
 
@@ -30,7 +30,7 @@ const int SENSOR_ID_LUMINOSIDADE = 5;
 
 static const unsigned long WIFI_RETRY_INTERVAL_MS = 5000;
 static const unsigned long MQTT_RETRY_INTERVAL_MS = 5000;
-static const unsigned long MQTT_PUBLISH_INTERVAL_MS = 500;
+static const unsigned long MQTT_PUBLISH_INTERVAL_MS = 15000;
 static const unsigned long MQTT_ERROR_LOG_INTERVAL_MS = 5000;
 
 WiFiClient wifiClient;
