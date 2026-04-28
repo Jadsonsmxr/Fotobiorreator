@@ -3,7 +3,7 @@
 #include <Adafruit_ADS1X15.h>
 
 float buffer[10];
-float calibration_value = 24.15; // ajuste do ponto neutro (pH 7)
+float calibration_value = 16.101593625498005; // ajuste do ponto neutro (pH 7)
 float ph_act = 0.0;
 
 extern Adafruit_ADS1115 ads;
@@ -64,12 +64,12 @@ void sensorPH_Loop(){
 
       //  Converter para pH usando fórmula calibrada
       //ph_act = -5.70 * avg_voltage + calibration_value;
-      ph_act = -6.52 * avg_voltage + calibration_value;
+      ph_act = -5.97609562 * avg_voltage + calibration_value;
       //  Mostrar resultados
-      Serial.print("Tensão média: ");
-      Serial.print(avg_voltage, 3);
-      Serial.print(" V | Valor de pH: ");
-      Serial.println(ph_act, 2);
+      // Serial.print("Tensão média: ");
+      // Serial.print(avg_voltage, 3);
+      // Serial.print(" V | Valor de pH: ");
+      // Serial.println(ph_act, 2);
     }
   
 }

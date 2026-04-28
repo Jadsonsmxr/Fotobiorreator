@@ -28,7 +28,7 @@ struct ScheduledTime {
 
 static ScheduledTime scheduledTimes[] = {
   {12, 0},
-  {16, 22},
+  {14, 46},
   {16, 45}
 };
 
@@ -124,7 +124,7 @@ void setup() {
   // Serial.print("Canal WiFi atual: ");
   // Serial.println(wifiChannel);
 
-  // sensorPH_Setup();
+  sensorPH_Setup();
   sensorTemperature_Setup();
   //sensorLight_Setup();
   
@@ -148,7 +148,7 @@ void loop() {
   mqtt_loop();
   espnow_loop(); 
 
-  // sensorPH_Loop();
+  sensorPH_Loop();
 
   sensorTemperature_Loop();
 
