@@ -12,6 +12,7 @@ from apps import db, login_manager
 from apps.authentication.util import hash_pass
 
 from sqlalchemy.sql import func
+from datetime import datetime, timezone
 
 class Users(db.Model, UserMixin):
 
@@ -102,7 +103,37 @@ class SensorReading(db.Model):
     sensor = db.relationship("Sensor", backref="readings")
 
 
+class CultivationCycle(db.Model):
+    __tablename__ = "cultivation_cycles"
 
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    notes = db.Column(db.Text, nullable=True)
+    status = db.Column(db.String(20), nullable=False, default="active", index=True)
+    started_at = db.Column(
+        db.DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        server_default=func.now(),
+        nullable=False,
+        index=True,
+    )
+    ended_at = db.Column(db.DateTime(timezone=True), nullable=True, index=True)
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        server_default=func.now(),
+        nullable=False,
+    )
+    updated_at = db.Column(
+        db.DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        server_default=func.now(),
+        onupdate=lambda: datetime.now(timezone.utc),
+        nullable=False,
+    )
+
+    created_by_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    created_by = db.relationship("Users", backref=db.backref("cultivation_cycles", lazy=True))
 
 
 @login_manager.user_loader

@@ -1,0 +1,917 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Ciclos {% endblock %}
+
+{% block stylesheets %}
+<style>
+  .cycles-page .cycles-intro {
+    max-width: 720px;
+    margin-bottom: 1.5rem;
+  }
+
+  .cycles-page .cycles-kicker {
+    display: inline-block;
+    margin-bottom: 0.75rem;
+    padding: 0.35rem 0.75rem;
+    border: 1px solid rgba(0, 242, 195, 0.18);
+    border-radius: 999px;
+    color: #00f2c3;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: rgba(0, 242, 195, 0.08);
+  }
+
+  .cycles-page .cycles-intro .card-title {
+    margin-bottom: 0.4rem;
+  }
+
+  .cycles-page .cycles-intro p,
+  .cycles-page .helper-copy,
+  .cycles-page .empty-copy,
+  .cycles-page .cycle-meta-value.is-muted,
+  .cycles-page .sensor-summary-meta {
+    color: rgba(255, 255, 255, 0.68);
+  }
+
+  .cycles-page .cycle-card {
+    height: 100%;
+  }
+
+  .cycles-page .cycle-card .card-header .title {
+    margin-bottom: 0.2rem;
+    font-size: 1.02rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+
+  .cycles-page .cycle-card .card-body {
+    padding-top: 0.9rem;
+  }
+
+  .cycles-page .section-shell {
+    padding: 1.2rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .cycles-page .section-shell + .section-shell {
+    margin-top: 1rem;
+  }
+
+  .cycles-page .section-head {
+    margin-bottom: 1rem;
+  }
+
+  .cycles-page .section-head .card-title {
+    margin-bottom: 0.35rem;
+  }
+
+  .cycles-page .current-cycle-shell {
+    position: relative;
+    overflow: hidden;
+    border-color: rgba(3, 182, 83, 0.16);
+  }
+
+  .cycles-page .current-cycle-shell::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 3px;
+    background: linear-gradient(90deg, #00f2c3 0%, #03b653 100%);
+  }
+
+  .cycles-page .current-cycle-name {
+    margin-bottom: 0.3rem;
+    font-size: 1.32rem;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
+  .cycles-page .cycle-stat-grid,
+  .cycles-page .insight-grid,
+  .cycles-page .sensor-summary-grid {
+    display: grid;
+    gap: 0.85rem;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+
+  .cycles-page .cycle-stat,
+  .cycles-page .insight-card,
+  .cycles-page .sensor-summary-card,
+  .cycles-page .history-item {
+    padding: 0.95rem 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 0.8rem;
+    background: rgba(255, 255, 255, 0.025);
+  }
+
+  .cycles-page .history-list {
+    display: grid;
+    gap: 0.85rem;
+  }
+
+  .cycles-page .history-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-top: 0.85rem;
+    padding-bottom: 0.85rem;
+  }
+
+  .cycles-page .history-item-main {
+    min-width: 0;
+    display: grid;
+    gap: 0.18rem;
+  }
+
+  .cycles-page .history-item-name {
+    margin-bottom: 0;
+    color: #ffffff;
+    font-size: 0.96rem;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  .cycles-page .history-item-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.7rem;
+    font-size: 0.81rem;
+    color: rgba(255, 255, 255, 0.66);
+  }
+
+  .cycles-page .history-item-actions {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.45rem;
+    flex-shrink: 0;
+  }
+
+  .cycles-page .history-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 34px;
+    padding: 0.45rem 0.8rem;
+    border: 1px solid rgba(3, 182, 83, 0.18);
+    border-radius: 999px;
+    color: #00f2c3;
+    font-weight: 600;
+    font-size: 0.82rem;
+    line-height: 1;
+    text-decoration: none;
+    background: rgba(3, 182, 83, 0.06);
+  }
+
+  .cycles-page .history-link:hover,
+  .cycles-page .history-link:focus {
+    color: #3ddc97;
+    text-decoration: none;
+    background: rgba(3, 182, 83, 0.12);
+  }
+
+  .cycles-page .cycle-stat-label,
+  .cycles-page .cycle-meta-label,
+  .cycles-page .insight-label,
+  .cycles-page .sensor-summary-label,
+  .cycles-page .sensor-summary-stat-label {
+    display: block;
+    margin-bottom: 0.32rem;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.54);
+  }
+
+  .cycles-page .cycle-stat-value,
+  .cycles-page .cycle-meta-value,
+  .cycles-page .insight-value,
+  .cycles-page .sensor-summary-title,
+  .cycles-page .sensor-summary-stat-value {
+    display: block;
+    color: #ffffff;
+    font-size: 0.98rem;
+    font-weight: 500;
+    line-height: 1.45;
+  }
+
+  .cycles-page .cycle-meta-value,
+  .cycles-page .insight-value,
+  .cycles-page .sensor-summary-title {
+    word-break: break-word;
+  }
+
+  .cycles-page .cycle-stat-value,
+  .cycles-page .sensor-summary-title {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .cycles-page .insight-value.is-strong {
+    font-size: 1.04rem;
+    font-weight: 600;
+  }
+
+  .cycles-page .cycle-meta-grid {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .cycles-page .notes-box {
+    padding: 0.95rem 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 0.8rem;
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .cycles-page .status-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.42rem 0.72rem;
+    border-radius: 999px;
+    font-size: 0.73rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .cycles-page .status-chip.is-success {
+    background: rgba(31, 218, 156, 0.14);
+    color: #20c997;
+  }
+
+  .cycles-page .status-chip.is-warning {
+    background: rgba(255, 193, 7, 0.14);
+    color: #f1c40f;
+  }
+
+  .cycles-page .status-chip.is-error {
+    background: rgba(255, 107, 107, 0.14);
+    color: #ff6b6b;
+  }
+
+  .cycles-page .status-chip.is-muted {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.74);
+  }
+
+  .cycles-page .feedback-box {
+    margin-bottom: 1rem;
+    padding: 0.9rem 1rem;
+    border-radius: 0.8rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .cycles-page .feedback-box.is-success {
+    border-color: rgba(31, 218, 156, 0.22);
+    background: rgba(31, 218, 156, 0.08);
+  }
+
+  .cycles-page .feedback-box.is-success {
+    color: #cffff0;
+  }
+
+  .white-content .cycles-page .feedback-box.is-success {
+    color: #066649;
+    border-color: rgba(3, 182, 83, 0.20);
+    background: rgba(3, 182, 83, 0.10);
+  }
+
+  .cycles-page .feedback-box.is-error {
+    border-color: rgba(255, 107, 107, 0.22);
+    background: rgba(255, 107, 107, 0.08);
+  }
+
+  .cycles-page .confirm-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+    background: rgba(15, 23, 42, 0.58);
+    backdrop-filter: blur(4px);
+    z-index: 1080;
+  }
+
+  .cycles-page .confirm-modal-backdrop.is-visible {
+    display: flex;
+  }
+
+  .cycles-page .confirm-modal {
+    width: min(100%, 420px);
+    padding: 1.25rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 1rem;
+    background: #131a2f;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+  }
+
+  .cycles-page .confirm-modal-title {
+    margin-bottom: 0.35rem;
+    color: #ffffff;
+    font-size: 1.05rem;
+    font-weight: 600;
+  }
+
+  .cycles-page .confirm-modal-copy {
+    margin-bottom: 1rem;
+    color: rgba(255, 255, 255, 0.72);
+    line-height: 1.5;
+  }
+
+  .cycles-page .confirm-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.6rem;
+  }
+
+  .white-content .cycles-page .confirm-modal {
+    background: #ffffff;
+    border-color: rgba(34, 42, 66, 0.08);
+    box-shadow: 0 20px 44px rgba(34, 42, 66, 0.16);
+  }
+
+  .white-content .cycles-page .confirm-modal-title {
+    color: #222a42;
+  }
+
+  .white-content .cycles-page .confirm-modal-copy {
+    color: rgba(34, 42, 66, 0.72);
+  }
+
+  .cycles-page .btn.cycle-primary-btn,
+  .cycles-page .btn.btn-round.cycle-primary-btn {
+    border-color: rgba(3, 182, 83, 0.36) !important;
+    background: #0dbb74 !important;
+    background-image: none !important;
+    color: #ffffff !important;
+    box-shadow: 0 10px 22px rgba(3, 182, 83, 0.18) !important;
+  }
+
+  .cycles-page .btn.cycle-primary-btn:hover,
+  .cycles-page .btn.cycle-primary-btn:focus,
+  .cycles-page .btn.btn-round.cycle-primary-btn:hover,
+  .cycles-page .btn.btn-round.cycle-primary-btn:focus {
+    border-color: rgba(3, 182, 83, 0.48) !important;
+    background: #14c97d !important;
+    background-image: none !important;
+    color: #ffffff !important;
+    box-shadow: 0 12px 24px rgba(3, 182, 83, 0.24) !important;
+  }
+
+  .cycles-page .btn.cycle-outline-btn,
+  .cycles-page .btn.btn-round.cycle-outline-btn {
+    border-color: rgba(3, 182, 83, 0.36) !important;
+    color: #20c997 !important;
+    background: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+  }
+
+  .cycles-page .btn.cycle-outline-btn:hover,
+  .cycles-page .btn.cycle-outline-btn:focus,
+  .cycles-page .btn.btn-round.cycle-outline-btn:hover,
+  .cycles-page .btn.btn-round.cycle-outline-btn:focus {
+    border-color: rgba(3, 182, 83, 0.52) !important;
+    background: rgba(3, 182, 83, 0.12) !important;
+    background-image: none !important;
+    color: #3ddc97 !important;
+    box-shadow: none !important;
+  }
+
+  .cycles-page .btn.cycle-danger-btn,
+  .cycles-page .btn.btn-round.cycle-danger-btn {
+    border-color: rgba(255, 107, 107, 0.28) !important;
+    color: #ff8787 !important;
+    background: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+  }
+
+  .cycles-page .btn.cycle-danger-btn:hover,
+  .cycles-page .btn.cycle-danger-btn:focus,
+  .cycles-page .btn.btn-round.cycle-danger-btn:hover,
+  .cycles-page .btn.btn-round.cycle-danger-btn:focus {
+    border-color: rgba(255, 107, 107, 0.44) !important;
+    background: rgba(255, 107, 107, 0.12) !important;
+    background-image: none !important;
+    color: #ff9d9d !important;
+  }
+
+  .cycles-page .history-action-form {
+    margin: 0;
+    display: inline-flex;
+  }
+
+  .cycles-page .history-item-actions .btn {
+    min-height: 34px;
+    padding-top: 0.45rem;
+    padding-bottom: 0.45rem;
+    margin: 0;
+  }
+
+  .cycles-page label {
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 0.45rem;
+  }
+
+  .cycles-page input.form-control,
+  .cycles-page textarea.form-control {
+    border-color: rgba(0, 242, 195, 0.14);
+    background: rgba(255, 255, 255, 0.03);
+    color: #ffffff;
+  }
+
+  .cycles-page input.form-control:focus,
+  .cycles-page textarea.form-control:focus {
+    border-color: rgba(0, 242, 195, 0.34);
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .cycles-page textarea.form-control {
+    min-height: 110px;
+  }
+
+  .white-content .cycles-page .cycles-intro p,
+  .white-content .cycles-page .helper-copy,
+  .white-content .cycles-page .empty-copy,
+  .white-content .cycles-page .cycle-meta-value.is-muted,
+  .white-content .cycles-page .sensor-summary-meta,
+  .white-content .cycles-page .history-item-meta {
+    color: rgba(34, 42, 66, 0.68);
+  }
+
+  .white-content .cycles-page .cycles-kicker {
+    color: #087f5b;
+    border-color: rgba(3, 182, 83, 0.28);
+    background: rgba(3, 182, 83, 0.10);
+  }
+
+  .white-content .cycles-page .section-shell,
+  .white-content .cycles-page .cycle-stat,
+  .white-content .cycles-page .insight-card,
+  .white-content .cycles-page .feedback-box,
+  .white-content .cycles-page .notes-box,
+  .white-content .cycles-page .sensor-summary-card,
+  .white-content .cycles-page .history-item {
+    background: rgba(34, 42, 66, 0.02);
+    border-color: rgba(34, 42, 66, 0.08);
+  }
+
+  .white-content .cycles-page .cycle-stat-label,
+  .white-content .cycles-page .cycle-meta-label,
+  .white-content .cycles-page .insight-label,
+  .white-content .cycles-page .sensor-summary-label,
+  .white-content .cycles-page .sensor-summary-stat-label {
+    color: rgba(34, 42, 66, 0.52);
+  }
+
+  .white-content .cycles-page .cycle-stat-value,
+  .white-content .cycles-page .cycle-meta-value,
+  .white-content .cycles-page .insight-value,
+  .white-content .cycles-page .sensor-summary-title,
+  .white-content .cycles-page .sensor-summary-stat-value,
+  .white-content .cycles-page .history-item-name {
+    color: #222a42;
+  }
+
+  .white-content .cycles-page label {
+    color: rgba(34, 42, 66, 0.74);
+  }
+
+  .white-content .cycles-page input.form-control,
+  .white-content .cycles-page textarea.form-control {
+    color: #222a42;
+    border-color: rgba(34, 42, 66, 0.12);
+    background: rgba(34, 42, 66, 0.02);
+  }
+
+  .white-content .cycles-page input.form-control:focus,
+  .white-content .cycles-page textarea.form-control:focus {
+    border-color: rgba(3, 182, 83, 0.28);
+    background: rgba(34, 42, 66, 0.03);
+  }
+
+  .white-content .cycles-page .status-chip.is-muted {
+    background: rgba(34, 42, 66, 0.08);
+    color: rgba(34, 42, 66, 0.78);
+    border: 1px solid rgba(34, 42, 66, 0.10);
+  }
+
+  .white-content .cycles-page .status-chip.is-success {
+    background: rgba(3, 182, 83, 0.12);
+    color: #066649;
+    border: 1px solid rgba(3, 182, 83, 0.18);
+  }
+
+  .white-content .cycles-page .status-chip.is-warning {
+    background: rgba(241, 196, 15, 0.16);
+    color: #7a5600;
+    border: 1px solid rgba(241, 196, 15, 0.22);
+  }
+
+  .white-content .cycles-page .status-chip.is-error {
+    background: rgba(255, 107, 107, 0.16);
+    color: #a61e1e;
+    border: 1px solid rgba(255, 107, 107, 0.20);
+  }
+
+  .white-content .cycles-page .btn.cycle-primary-btn,
+  .white-content .cycles-page .btn.btn-round.cycle-primary-btn {
+    border-color: rgba(3, 182, 83, 0.34) !important;
+    background: #0dbb74 !important;
+    background-image: none !important;
+    color: #ffffff !important;
+  }
+
+  .white-content .cycles-page .btn.cycle-primary-btn:hover,
+  .white-content .cycles-page .btn.cycle-primary-btn:focus,
+  .white-content .cycles-page .btn.btn-round.cycle-primary-btn:hover,
+  .white-content .cycles-page .btn.btn-round.cycle-primary-btn:focus {
+    border-color: rgba(3, 182, 83, 0.50) !important;
+    background: #14c97d !important;
+    background-image: none !important;
+    color: #ffffff !important;
+  }
+
+  .white-content .cycles-page .btn.cycle-outline-btn,
+  .white-content .cycles-page .btn.btn-round.cycle-outline-btn {
+    border-color: rgba(3, 182, 83, 0.34) !important;
+    color: #087f5b !important;
+    background: transparent !important;
+    background-image: none !important;
+  }
+
+  .white-content .cycles-page .btn.cycle-outline-btn:hover,
+  .white-content .cycles-page .btn.cycle-outline-btn:focus,
+  .white-content .cycles-page .btn.btn-round.cycle-outline-btn:hover,
+  .white-content .cycles-page .btn.btn-round.cycle-outline-btn:focus {
+    border-color: rgba(3, 182, 83, 0.50) !important;
+    background: rgba(3, 182, 83, 0.10) !important;
+    background-image: none !important;
+    color: #066649 !important;
+  }
+
+  .white-content .cycles-page .btn.cycle-danger-btn,
+  .white-content .cycles-page .btn.btn-round.cycle-danger-btn {
+    border-color: rgba(255, 107, 107, 0.28) !important;
+    color: #b02a37 !important;
+    background: transparent !important;
+    background-image: none !important;
+  }
+
+  .white-content .cycles-page .btn.cycle-danger-btn:hover,
+  .white-content .cycles-page .btn.cycle-danger-btn:focus,
+  .white-content .cycles-page .btn.btn-round.cycle-danger-btn:hover,
+  .white-content .cycles-page .btn.btn-round.cycle-danger-btn:focus {
+    border-color: rgba(255, 107, 107, 0.40) !important;
+    background: rgba(255, 107, 107, 0.10) !important;
+    background-image: none !important;
+    color: #8f1d2c !important;
+  }
+
+  .white-content .cycles-page .history-link {
+    color: #03b653;
+  }
+
+  @media (max-width: 991.98px) {
+    .cycles-page .history-item {
+      flex-direction: column;
+    }
+
+    .cycles-page .history-item-actions {
+      width: 100%;
+      justify-content: flex-start;
+    }
+  }
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="content cycles-page">
+  <div class="cycles-intro">
+    <span class="cycles-kicker">Ciclos de cultivo</span>
+    <h2 class="card-title mb-0">Ciclos</h2>
+    <p>Inicie e finalize campanhas de cultivo para acompanhar como os sensores se comportaram ao longo de cada período.</p>
+  </div>
+
+  {% if cycle_feedback.message %}
+  <div class="feedback-box {% if cycle_feedback.type == 'success' %}is-success{% elif cycle_feedback.type == 'error' %}is-error{% endif %}">
+    {{ cycle_feedback.message }}
+  </div>
+  {% endif %}
+
+  <div class="row">
+    <div class="col-12 col-xl-7 mb-4">
+      <div class="card cycle-card">
+        <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
+          <div>
+            <h4 class="title mb-1">Ciclo atual</h4>
+            <p class="helper-copy mb-0">Acompanhe o ciclo em andamento e mantenha só as ações mais importantes neste bloco.</p>
+          </div>
+          {% if active_cycle %}
+          <span class="status-chip {{ active_cycle.status_class }}">{{ active_cycle.status_label }}</span>
+          {% endif %}
+        </div>
+        <div class="card-body">
+          {% if active_cycle %}
+          <div class="section-shell current-cycle-shell">
+            <div class="d-flex justify-content-between align-items-start flex-wrap mb-4">
+              <div class="mr-3 mb-3">
+                <h3 class="current-cycle-name">{{ active_cycle.name }}</h3>
+                <p class="empty-copy mb-0">Iniciado em {{ active_cycle.started_at_display }}</p>
+              </div>
+              <div class="d-flex flex-wrap" style="gap: 0.5rem;">
+                <form method="post" action="{{ url_for('home_blueprint.finish_cycle', cycle_id=active_cycle.id) }}" class="cycle-confirm-form" data-confirm-title="Finalizar ciclo" data-confirm-message="Deseja realmente finalizar este ciclo?">
+                  <button type="submit" class="btn btn-round cycle-outline-btn">Finalizar ciclo</button>
+                </form>
+                <form method="post" action="{{ url_for('home_blueprint.delete_cycle', cycle_id=active_cycle.id) }}" class="cycle-confirm-form" data-confirm-title="Excluir ciclo" data-confirm-message="Deseja realmente excluir este ciclo? Esta ação não pode ser desfeita.">
+                  <button type="submit" class="btn btn-round cycle-danger-btn">Excluir ciclo</button>
+                </form>
+              </div>
+            </div>
+
+            <div class="cycle-stat-grid mb-4">
+              <div class="cycle-stat">
+                <span class="cycle-stat-label">Duração</span>
+                <span class="cycle-stat-value">{{ active_cycle.duration_label }}</span>
+              </div>
+              <div class="cycle-stat">
+                <span class="cycle-stat-label">Sensores com dados</span>
+                <span class="cycle-stat-value">{{ active_cycle.sensor_count }}</span>
+              </div>
+              <div class="cycle-stat">
+                <span class="cycle-stat-label">Leituras</span>
+                <span class="cycle-stat-value">{{ active_cycle.reading_count }}</span>
+              </div>
+            </div>
+
+            <div class="notes-box">
+              <span class="cycle-meta-label">Observações</span>
+              <span class="cycle-meta-value is-muted">{{ active_cycle.notes if active_cycle.notes else 'Nenhuma observação registrada para este ciclo.' }}</span>
+            </div>
+          </div>
+          {% else %}
+          <div class="section-shell">
+            <div class="section-head">
+              <h4 class="card-title mb-0">Nenhum ciclo em andamento</h4>
+              <p class="helper-copy mb-0">Abra um novo ciclo para começar a consolidar as leituras do cultivo em um período rastreável.</p>
+            </div>
+            <form method="post" action="{{ url_for('home_blueprint.start_cycle') }}">
+              <div class="form-group">
+                <label for="cycle-name">Nome do ciclo</label>
+                <input id="cycle-name" name="name" type="text" class="form-control" placeholder="Ex.: Ciclo abril - lote A" required>
+              </div>
+              <div class="form-group mb-4">
+                <label for="cycle-notes">Observações</label>
+                <textarea id="cycle-notes" name="notes" class="form-control" placeholder="Anote contexto, objetivo do cultivo ou observações iniciais."></textarea>
+              </div>
+              <button type="submit" class="btn btn-round cycle-primary-btn">Iniciar ciclo</button>
+            </form>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-xl-5 mb-4">
+      <div class="card cycle-card">
+        <div class="card-header d-flex justify-content-between align-items-start flex-wrap">
+          <div class="mr-3 mb-2">
+            <h4 class="title mb-1">Histórico recente</h4>
+            <p class="helper-copy mb-0">Revise ciclos anteriores sem depender de tabela pesada ou rolagem lateral.</p>
+          </div>
+          <a class="history-link" href="{{ url_for('home_blueprint.route_template', template='cycles_history.html') }}">Ver todos</a>
+        </div>
+        <div class="card-body">
+          <div class="section-shell">
+            {% if cycle_history %}
+            <div class="history-list">
+              {% for cycle in cycle_history %}
+              <div class="history-item">
+                <div class="history-item-main">
+                  <div class="history-item-name">{{ cycle.name }}</div>
+                  <div class="history-item-meta">
+                    <span>{{ cycle.started_date_display }}</span>
+                    <span>{{ cycle.duration_label }}</span>
+                  </div>
+                </div>
+                <div class="history-item-actions">
+                  <a class="history-link" href="{{ url_for('home_blueprint.route_template', template='cycles.html', cycle_id=cycle.id) }}">Ver resumo</a>
+                  <form class="history-action-form cycle-confirm-form" method="post" action="{{ url_for('home_blueprint.delete_cycle', cycle_id=cycle.id) }}" data-confirm-title="Excluir ciclo" data-confirm-message="Deseja realmente excluir este ciclo? Esta ação não pode ser desfeita.">
+                    <button type="submit" class="btn btn-sm btn-round cycle-danger-btn">Excluir</button>
+                  </form>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+            {% else %}
+            <p class="empty-copy mb-0">Nenhum ciclo foi registrado ainda.</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <div class="card cycle-card">
+        <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
+          <div>
+            <h4 class="title mb-1">Resumo do ciclo</h4>
+            <p class="helper-copy mb-0">Aqui fica a leitura analítica do ciclo selecionado, sem repetir a parte operacional do bloco acima.</p>
+          </div>
+          {% if selected_cycle %}
+          <span class="status-chip {{ selected_cycle.status_class }}">{{ selected_cycle.status_label }}</span>
+          {% endif %}
+        </div>
+        <div class="card-body">
+          {% if selected_cycle %}
+          <div class="section-shell mb-3">
+            <div class="cycle-meta-grid mb-4">
+              <div>
+                <span class="cycle-meta-label">Ciclo selecionado</span>
+                <span class="cycle-meta-value">{{ selected_cycle.name }}</span>
+              </div>
+              <div>
+                <span class="cycle-meta-label">Janela analisada</span>
+                <span class="cycle-meta-value">{{ selected_cycle.window_started_at_display }}{% if selected_cycle.ended_at %} até {{ selected_cycle.window_ended_at_display }}{% else %} até agora{% endif %}</span>
+              </div>
+              {% if selected_cycle.notes %}
+              <div>
+                <span class="cycle-meta-label">Observações do ciclo</span>
+                <span class="cycle-meta-value is-muted">{{ selected_cycle.notes }}</span>
+              </div>
+              {% endif %}
+            </div>
+
+            <div class="insight-grid">
+              <div class="insight-card">
+                <span class="insight-label">Leituras no período</span>
+                <span class="insight-value is-strong">{{ selected_cycle.reading_count }}</span>
+              </div>
+              <div class="insight-card">
+                <span class="insight-label">Sensores com dados</span>
+                <span class="insight-value is-strong">{{ selected_cycle.sensor_count }}</span>
+              </div>
+              <div class="insight-card">
+                <span class="insight-label">Sensores estáveis</span>
+                <span class="insight-value is-strong">{{ selected_cycle.insights.stable_sensor_count }}</span>
+              </div>
+              <div class="insight-card">
+                <span class="insight-label">Sensores oscilantes</span>
+                <span class="insight-value is-strong">{{ selected_cycle.insights.oscillating_sensor_count }}</span>
+              </div>
+              <div class="insight-card">
+                <span class="insight-label">Maior variação</span>
+                <span class="insight-value">
+                  {% if selected_cycle.insights.most_variable_sensor %}
+                    {{ selected_cycle.insights.most_variable_sensor }}
+                    {% if selected_cycle.insights.most_variable_amplitude is not none %}
+                      <br>
+                      <small class="helper-copy">{{ '%.2f'|format(selected_cycle.insights.most_variable_amplitude) }} {{ selected_cycle.insights.most_variable_unit }}</small>
+                    {% endif %}
+                  {% else %}
+                    Sem dados suficientes
+                  {% endif %}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-shell">
+            {% if selected_cycle.sensor_summaries %}
+            <div class="sensor-summary-grid">
+              {% for sensor in selected_cycle.sensor_summaries %}
+              <div class="sensor-summary-card">
+                <span class="sensor-summary-label">Sensor</span>
+                <span class="sensor-summary-title">{{ sensor.sensor_name }}</span>
+                <div class="sensor-summary-meta mb-3">{{ sensor.reading_count }} leituras registradas</div>
+
+                <div class="cycle-stat-grid mb-3">
+                  <div>
+                    <span class="sensor-summary-stat-label">Mínimo</span>
+                    <span class="sensor-summary-stat-value">{{ '%.2f'|format(sensor.min_value) }} {{ sensor.sensor_unit }}</span>
+                  </div>
+                  <div>
+                    <span class="sensor-summary-stat-label">Média</span>
+                    <span class="sensor-summary-stat-value">{{ '%.2f'|format(sensor.avg_value) }} {{ sensor.sensor_unit }}</span>
+                  </div>
+                  <div>
+                    <span class="sensor-summary-stat-label">Máximo</span>
+                    <span class="sensor-summary-stat-value">{{ '%.2f'|format(sensor.max_value) }} {{ sensor.sensor_unit }}</span>
+                  </div>
+                  <div>
+                    <span class="sensor-summary-stat-label">Amplitude</span>
+                    <span class="sensor-summary-stat-value">{% if sensor.amplitude is not none %}{{ '%.2f'|format(sensor.amplitude) }} {{ sensor.sensor_unit }}{% else %}--{% endif %}</span>
+                  </div>
+                  <div>
+                    <span class="sensor-summary-stat-label">Última leitura</span>
+                    <span class="sensor-summary-stat-value">{% if sensor.latest_value is not none %}{{ '%.2f'|format(sensor.latest_value) }} {{ sensor.sensor_unit }}{% else %}--{% endif %}</span>
+                  </div>
+                </div>
+
+                <span class="status-chip {{ sensor.stability_class }}">{{ sensor.stability_label }}</span>
+              </div>
+              {% endfor %}
+            </div>
+            {% else %}
+            <div>
+              <h5 class="card-title mb-2">Ainda não há leituras neste ciclo</h5>
+              <p class="empty-copy mb-2">Os nomes dos sensores, como temperatura, pH e CO2, só aparecem aqui quando existem leituras registradas dentro da janela deste ciclo.</p>
+              <p class="empty-copy mb-0">No seu teste atual, o ciclo foi iniciado e encerrado sem leituras no intervalo, por isso o resumo ficou vazio.</p>
+            </div>
+            {% endif %}
+          </div>
+          {% else %}
+          <div class="section-shell">
+            <p class="empty-copy mb-0">Inicie um ciclo para começar a acompanhar o comportamento dos sensores ao longo do cultivo.</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="confirm-modal-backdrop" id="cycle-confirm-modal" aria-hidden="true">
+    <div class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="cycle-confirm-title">
+      <h3 class="confirm-modal-title" id="cycle-confirm-title">Confirmar ação</h3>
+      <p class="confirm-modal-copy" id="cycle-confirm-message">Deseja continuar?</p>
+      <div class="confirm-modal-actions">
+        <button type="button" class="btn btn-round cycle-outline-btn" id="cycle-confirm-cancel">Cancelar</button>
+        <button type="button" class="btn btn-round cycle-danger-btn" id="cycle-confirm-accept">Confirmar</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+<script>
+  (function () {
+    const modal = document.getElementById('cycle-confirm-modal');
+    if (!modal) return;
+
+    const title = document.getElementById('cycle-confirm-title');
+    const message = document.getElementById('cycle-confirm-message');
+    const accept = document.getElementById('cycle-confirm-accept');
+    const cancel = document.getElementById('cycle-confirm-cancel');
+    let pendingForm = null;
+
+    function closeModal() {
+      modal.classList.remove('is-visible');
+      modal.setAttribute('aria-hidden', 'true');
+      pendingForm = null;
+    }
+
+    document.querySelectorAll('.cycle-confirm-form').forEach((form) => {
+      form.addEventListener('submit', (event) => {
+        if (form.dataset.confirmed === 'true') {
+          form.dataset.confirmed = 'false';
+          return;
+        }
+
+        event.preventDefault();
+        pendingForm = form;
+        title.textContent = form.dataset.confirmTitle || 'Confirmar ação';
+        message.textContent = form.dataset.confirmMessage || 'Deseja continuar?';
+        modal.classList.add('is-visible');
+        modal.setAttribute('aria-hidden', 'false');
+      });
+    });
+
+    accept.addEventListener('click', () => {
+      if (!pendingForm) return;
+      const form = pendingForm;
+      form.dataset.confirmed = 'true';
+      closeModal();
+      form.requestSubmit();
+    });
+
+    cancel.addEventListener('click', closeModal);
+
+    modal.addEventListener('click', (event) => {
+      if (event.target === modal) closeModal();
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && modal.classList.contains('is-visible')) {
+        closeModal();
+      }
+    });
+  })();
+</script>
+{% endblock javascripts %}

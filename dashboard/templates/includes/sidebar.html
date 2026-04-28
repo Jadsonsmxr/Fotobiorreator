@@ -28,6 +28,12 @@
                     </a>
                 </li>    
 
+                <li class="{% if 'cycles' in segment %} active {% endif %}">
+                    <a href="/cycles.html">
+                      <i class="tim-icons icon-refresh-02"></i>
+                      <p>Ciclos</p>
+                    </a>
+                </li>
 
                 <!-- <li class="{% if 'dynamic_dt' in segment %} active {% endif %}">
                     <a href="{{ url_for('table_blueprint.dynamic_dt') }}">

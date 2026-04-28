@@ -1,0 +1,583 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Histórico de ciclos {% endblock %}
+
+{% block stylesheets %}
+<style>
+  .cycles-history-page .history-intro {
+    max-width: 760px;
+    margin-bottom: 1.5rem;
+  }
+
+  .cycles-history-page .history-kicker {
+    display: inline-block;
+    margin-bottom: 0.75rem;
+    padding: 0.35rem 0.75rem;
+    border: 1px solid rgba(0, 242, 195, 0.18);
+    border-radius: 999px;
+    color: #00f2c3;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: rgba(0, 242, 195, 0.08);
+  }
+
+  .cycles-history-page .history-intro .card-title {
+    margin-bottom: 0.4rem;
+  }
+
+  .cycles-history-page .helper-copy,
+  .cycles-history-page .empty-copy,
+  .cycles-history-page .history-item-meta,
+  .cycles-history-page .history-summary-note {
+    color: rgba(255, 255, 255, 0.68);
+  }
+
+  .cycles-history-page .section-shell {
+    padding: 1.2rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .cycles-history-page .feedback-box {
+    margin-bottom: 1rem;
+    padding: 0.9rem 1rem;
+    border-radius: 0.8rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .cycles-history-page .feedback-box.is-success {
+    border-color: rgba(31, 218, 156, 0.22);
+    background: rgba(31, 218, 156, 0.08);
+  }
+
+  .cycles-history-page .feedback-box.is-success {
+    color: #cffff0;
+  }
+
+  .white-content .cycles-history-page .feedback-box.is-success {
+    color: #066649;
+    border-color: rgba(3, 182, 83, 0.20);
+    background: rgba(3, 182, 83, 0.10);
+  }
+
+  .cycles-history-page .feedback-box.is-error {
+    border-color: rgba(255, 107, 107, 0.22);
+    background: rgba(255, 107, 107, 0.08);
+  }
+
+  .cycles-history-page .confirm-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+    background: rgba(15, 23, 42, 0.58);
+    backdrop-filter: blur(4px);
+    z-index: 1080;
+  }
+
+  .cycles-history-page .confirm-modal-backdrop.is-visible {
+    display: flex;
+  }
+
+  .cycles-history-page .confirm-modal {
+    width: min(100%, 420px);
+    padding: 1.25rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 1rem;
+    background: #131a2f;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+  }
+
+  .cycles-history-page .confirm-modal-title {
+    margin-bottom: 0.35rem;
+    color: #ffffff;
+    font-size: 1.05rem;
+    font-weight: 600;
+  }
+
+  .cycles-history-page .confirm-modal-copy {
+    margin-bottom: 1rem;
+    color: rgba(255, 255, 255, 0.72);
+    line-height: 1.5;
+  }
+
+  .cycles-history-page .confirm-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.6rem;
+  }
+
+  .white-content .cycles-history-page .confirm-modal {
+    background: #ffffff;
+    border-color: rgba(34, 42, 66, 0.08);
+    box-shadow: 0 20px 44px rgba(34, 42, 66, 0.16);
+  }
+
+  .white-content .cycles-history-page .confirm-modal-title {
+    color: #222a42;
+  }
+
+  .white-content .cycles-history-page .confirm-modal-copy {
+    color: rgba(34, 42, 66, 0.72);
+  }
+
+  .cycles-history-page .history-toolbar {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .cycles-history-page .filters-form {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.85rem;
+    margin-bottom: 1rem;
+  }
+
+  .cycles-history-page .filters-form label {
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 0.45rem;
+  }
+
+  .cycles-history-page .filters-form .form-control {
+    border-color: rgba(0, 242, 195, 0.14);
+    background: rgba(255, 255, 255, 0.03);
+    color: #ffffff;
+  }
+
+  .cycles-history-page .filters-form .form-control:focus {
+    border-color: rgba(0, 242, 195, 0.34);
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .cycles-history-page .filters-actions {
+    display: inline-flex;
+    align-items: flex-end;
+    gap: 0.55rem;
+  }
+
+  .cycles-history-page .history-list {
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .cycles-history-page .history-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 0.85rem;
+    background: rgba(255, 255, 255, 0.025);
+  }
+
+  .cycles-history-page .history-item-main {
+    min-width: 0;
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  .cycles-history-page .history-item-name {
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  .cycles-history-page .history-item-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.9rem;
+    font-size: 0.84rem;
+  }
+
+  .cycles-history-page .history-item-meta .status-chip {
+    transform: translateY(-1px);
+  }
+
+  .cycles-history-page .history-item-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  .cycles-history-page .status-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.42rem 0.72rem;
+    border-radius: 999px;
+    font-size: 0.73rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .cycles-history-page .status-chip.is-success {
+    background: rgba(31, 218, 156, 0.14);
+    color: #20c997;
+  }
+
+  .cycles-history-page .status-chip.is-muted {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.74);
+  }
+
+  .cycles-history-page .history-link,
+  .cycles-history-page .back-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+    padding: 0.48rem 0.9rem;
+    border: 1px solid rgba(3, 182, 83, 0.18);
+    border-radius: 999px;
+    color: #00f2c3;
+    font-weight: 600;
+    font-size: 0.84rem;
+    line-height: 1;
+    text-decoration: none;
+    background: rgba(3, 182, 83, 0.06);
+  }
+
+  .cycles-history-page .history-link:hover,
+  .cycles-history-page .history-link:focus,
+  .cycles-history-page .back-link:hover,
+  .cycles-history-page .back-link:focus {
+    color: #3ddc97;
+    text-decoration: none;
+    background: rgba(3, 182, 83, 0.12);
+  }
+
+  .cycles-history-page .btn.cycle-danger-btn,
+  .cycles-history-page .btn.btn-round.cycle-danger-btn {
+    border-color: rgba(255, 107, 107, 0.28) !important;
+    color: #ff8787 !important;
+    background: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    min-height: 36px;
+    margin: 0;
+  }
+
+  .cycles-history-page .btn.cycle-danger-btn:hover,
+  .cycles-history-page .btn.cycle-danger-btn:focus,
+  .cycles-history-page .btn.btn-round.cycle-danger-btn:hover,
+  .cycles-history-page .btn.btn-round.cycle-danger-btn:focus {
+    border-color: rgba(255, 107, 107, 0.44) !important;
+    background: rgba(255, 107, 107, 0.12) !important;
+    background-image: none !important;
+    color: #ff9d9d !important;
+  }
+
+  .cycles-history-page .history-action-form {
+    margin: 0;
+    display: inline-flex;
+  }
+
+  .cycles-history-page .pagination-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 1.2rem;
+  }
+
+  .cycles-history-page .pagination-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+  }
+
+  .cycles-history-page .pagination-state {
+    color: rgba(255, 255, 255, 0.74);
+    font-size: 0.84rem;
+    font-weight: 500;
+  }
+
+  .white-content .cycles-history-page .helper-copy,
+  .white-content .cycles-history-page .empty-copy,
+  .white-content .cycles-history-page .history-item-meta,
+  .white-content .cycles-history-page .history-summary-note,
+  .white-content .cycles-history-page .pagination-state {
+    color: rgba(34, 42, 66, 0.68);
+  }
+
+  .white-content .cycles-history-page .history-kicker {
+    color: #087f5b;
+    border-color: rgba(3, 182, 83, 0.28);
+    background: rgba(3, 182, 83, 0.10);
+  }
+
+  .white-content .cycles-history-page .section-shell,
+  .white-content .cycles-history-page .history-item,
+  .white-content .cycles-history-page .feedback-box {
+    background: rgba(34, 42, 66, 0.02);
+    border-color: rgba(34, 42, 66, 0.08);
+  }
+
+  .white-content .cycles-history-page .filters-form label {
+    color: rgba(34, 42, 66, 0.74);
+  }
+
+  .white-content .cycles-history-page .filters-form .form-control {
+    color: #222a42;
+    border-color: rgba(34, 42, 66, 0.12);
+    background: rgba(34, 42, 66, 0.02);
+  }
+
+  .white-content .cycles-history-page .filters-form .form-control:focus {
+    border-color: rgba(3, 182, 83, 0.28);
+    background: rgba(34, 42, 66, 0.03);
+  }
+
+  .white-content .cycles-history-page .history-item-name {
+    color: #222a42;
+  }
+
+  .white-content .cycles-history-page .status-chip.is-muted {
+    background: rgba(34, 42, 66, 0.08);
+    color: rgba(34, 42, 66, 0.78);
+    border: 1px solid rgba(34, 42, 66, 0.10);
+  }
+
+  .white-content .cycles-history-page .status-chip.is-success {
+    background: rgba(3, 182, 83, 0.12);
+    color: #066649;
+    border: 1px solid rgba(3, 182, 83, 0.18);
+  }
+
+  .white-content .cycles-history-page .history-link,
+  .white-content .cycles-history-page .back-link {
+    color: #087f5b;
+    border-color: rgba(3, 182, 83, 0.20);
+    background: rgba(3, 182, 83, 0.05);
+  }
+
+  .white-content .cycles-history-page .history-link:hover,
+  .white-content .cycles-history-page .history-link:focus,
+  .white-content .cycles-history-page .back-link:hover,
+  .white-content .cycles-history-page .back-link:focus {
+    color: #066649;
+    background: rgba(3, 182, 83, 0.10);
+  }
+
+  .white-content .cycles-history-page .btn.cycle-danger-btn,
+  .white-content .cycles-history-page .btn.btn-round.cycle-danger-btn {
+    border-color: rgba(255, 107, 107, 0.28) !important;
+    color: #b02a37 !important;
+  }
+
+  .white-content .cycles-history-page .btn.cycle-danger-btn:hover,
+  .white-content .cycles-history-page .btn.cycle-danger-btn:focus,
+  .white-content .cycles-history-page .btn.btn-round.cycle-danger-btn:hover,
+  .white-content .cycles-history-page .btn.btn-round.cycle-danger-btn:focus {
+    border-color: rgba(255, 107, 107, 0.40) !important;
+    background: rgba(255, 107, 107, 0.10) !important;
+    color: #8f1d2c !important;
+  }
+
+  @media (max-width: 991.98px) {
+    .cycles-history-page .history-toolbar,
+    .cycles-history-page .pagination-bar,
+    .cycles-history-page .history-item {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .cycles-history-page .filters-form {
+      grid-template-columns: 1fr;
+    }
+
+    .cycles-history-page .history-item-actions,
+    .cycles-history-page .pagination-actions,
+    .cycles-history-page .filters-actions {
+      width: 100%;
+      justify-content: flex-start;
+      flex-wrap: wrap;
+    }
+  }
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="content cycles-history-page">
+  <div class="history-intro">
+    <span class="history-kicker">Histórico completo</span>
+    <h2 class="card-title mb-0">Todos os ciclos</h2>
+    <p>Use esta visão quando o histórico recente já não for suficiente. Aqui ficam os ciclos paginados, sem sobrecarregar a tela principal.</p>
+  </div>
+
+  {% if cycle_feedback.message %}
+  <div class="feedback-box {% if cycle_feedback.type == 'success' %}is-success{% elif cycle_feedback.type == 'error' %}is-error{% endif %}">
+    {{ cycle_feedback.message }}
+  </div>
+  {% endif %}
+
+  <div class="card">
+    <div class="card-body">
+      <div class="section-shell">
+        <div class="history-toolbar">
+          <div>
+            <h4 class="title mb-1">Ciclos registrados</h4>
+            <p class="helper-copy mb-0">{{ cycles_page.total_cycles }} ciclo(s) encontrado(s).</p>
+          </div>
+          <a class="back-link" href="{{ url_for('home_blueprint.route_template', template='cycles.html') }}">Voltar para ciclos</a>
+        </div>
+
+        <form method="get" action="{{ url_for('home_blueprint.route_template', template='cycles_history.html') }}" class="filters-form">
+          <div class="form-group mb-0">
+            <label for="history-status">Status</label>
+            <select id="history-status" name="status" class="form-control">
+              <option value="all" {% if cycles_filters.status == 'all' %}selected{% endif %}>Todos</option>
+              <option value="active" {% if cycles_filters.status == 'active' %}selected{% endif %}>Em andamento</option>
+              <option value="finished" {% if cycles_filters.status == 'finished' %}selected{% endif %}>Finalizados</option>
+            </select>
+          </div>
+          <div class="form-group mb-0">
+            <label for="history-date-from">Início a partir de</label>
+            <input id="history-date-from" type="date" name="date_from" value="{{ cycles_filters.date_from }}" class="form-control">
+          </div>
+          <div class="form-group mb-0">
+            <label for="history-date-to">Início até</label>
+            <input id="history-date-to" type="date" name="date_to" value="{{ cycles_filters.date_to }}" class="form-control">
+          </div>
+          <div class="filters-actions">
+            <button type="submit" class="history-link" style="border: 0; cursor: pointer;">Filtrar</button>
+            <a class="back-link" href="{{ url_for('home_blueprint.route_template', template='cycles_history.html') }}">Limpar</a>
+          </div>
+        </form>
+
+        {% if cycles_page.records %}
+        <div class="history-list">
+          {% for cycle in cycles_page.records %}
+          <div class="history-item">
+            <div class="history-item-main">
+              <div class="history-item-name">{{ cycle.name }}</div>
+              <div class="history-item-meta">
+                <span>{{ cycle.started_at_display }}</span>
+                <span>{{ cycle.duration_label }}</span>
+                <span>{{ cycle.reading_count }} leituras</span>
+                <span>{{ cycle.sensor_count }} sensores com dados</span>
+                <span class="status-chip {{ cycle.status_class }}">{{ cycle.status_label }}</span>
+              </div>
+            </div>
+            <div class="history-item-actions">
+              <a class="history-link" href="{{ url_for('home_blueprint.route_template', template='cycles.html', cycle_id=cycle.id) }}">Ver resumo</a>
+              <form class="history-action-form cycle-confirm-form" method="post" action="{{ url_for('home_blueprint.delete_cycle', cycle_id=cycle.id) }}" data-confirm-title="Excluir ciclo" data-confirm-message="Deseja realmente excluir este ciclo? Esta ação não pode ser desfeita.">
+                <input type="hidden" name="redirect_template" value="cycles_history.html">
+                <input type="hidden" name="redirect_page" value="{{ cycles_page.current_page }}">
+                <input type="hidden" name="redirect_status" value="{{ cycles_filters.status }}">
+                <input type="hidden" name="redirect_date_from" value="{{ cycles_filters.date_from }}">
+                <input type="hidden" name="redirect_date_to" value="{{ cycles_filters.date_to }}">
+                <button type="submit" class="btn btn-sm btn-round cycle-danger-btn">Excluir</button>
+              </form>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="pagination-bar">
+          <div class="pagination-state">Página {{ cycles_page.current_page }} de {{ cycles_page.total_pages }}</div>
+          <div class="pagination-actions">
+            {% if cycles_page.has_prev %}
+            <a class="history-link" href="{{ url_for('home_blueprint.route_template', template='cycles_history.html', page=cycles_page.prev_page, status=cycles_filters.status, date_from=cycles_filters.date_from, date_to=cycles_filters.date_to) }}">Página anterior</a>
+            {% endif %}
+            {% if cycles_page.has_next %}
+            <a class="history-link" href="{{ url_for('home_blueprint.route_template', template='cycles_history.html', page=cycles_page.next_page, status=cycles_filters.status, date_from=cycles_filters.date_from, date_to=cycles_filters.date_to) }}">Próxima página</a>
+            {% endif %}
+          </div>
+        </div>
+        {% else %}
+        <div>
+          <h5 class="card-title mb-2">Nenhum ciclo registrado</h5>
+          <p class="empty-copy mb-0">Assim que você começar a registrar ciclos de cultivo, eles passarão a aparecer aqui com paginação.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="confirm-modal-backdrop" id="cycle-history-confirm-modal" aria-hidden="true">
+    <div class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="cycle-history-confirm-title">
+      <h3 class="confirm-modal-title" id="cycle-history-confirm-title">Confirmar ação</h3>
+      <p class="confirm-modal-copy" id="cycle-history-confirm-message">Deseja continuar?</p>
+      <div class="confirm-modal-actions">
+        <button type="button" class="btn btn-round back-link" id="cycle-history-confirm-cancel">Cancelar</button>
+        <button type="button" class="btn btn-round cycle-danger-btn" id="cycle-history-confirm-accept">Confirmar</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+<script>
+  (function () {
+    const modal = document.getElementById('cycle-history-confirm-modal');
+    if (!modal) return;
+
+    const title = document.getElementById('cycle-history-confirm-title');
+    const message = document.getElementById('cycle-history-confirm-message');
+    const accept = document.getElementById('cycle-history-confirm-accept');
+    const cancel = document.getElementById('cycle-history-confirm-cancel');
+    let pendingForm = null;
+
+    function closeModal() {
+      modal.classList.remove('is-visible');
+      modal.setAttribute('aria-hidden', 'true');
+      pendingForm = null;
+    }
+
+    document.querySelectorAll('.cycle-confirm-form').forEach((form) => {
+      form.addEventListener('submit', (event) => {
+        if (form.dataset.confirmed === 'true') {
+          form.dataset.confirmed = 'false';
+          return;
+        }
+
+        event.preventDefault();
+        pendingForm = form;
+        title.textContent = form.dataset.confirmTitle || 'Confirmar ação';
+        message.textContent = form.dataset.confirmMessage || 'Deseja continuar?';
+        modal.classList.add('is-visible');
+        modal.setAttribute('aria-hidden', 'false');
+      });
+    });
+
+    accept.addEventListener('click', () => {
+      if (!pendingForm) return;
+      const form = pendingForm;
+      form.dataset.confirmed = 'true';
+      closeModal();
+      form.requestSubmit();
+    });
+
+    cancel.addEventListener('click', closeModal);
+
+    modal.addEventListener('click', (event) => {
+      if (event.target === modal) closeModal();
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && modal.classList.contains('is-visible')) {
+        closeModal();
+      }
+    });
+  })();
+</script>
+{% endblock javascripts %}
