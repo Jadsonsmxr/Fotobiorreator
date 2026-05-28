@@ -14,10 +14,10 @@
 #include <esp_wifi.h>
 #include <stdlib.h>
 #include <time.h>
+#include "app_config.h"
 // put function declarations here:
 // int teste = 1;
 Adafruit_ADS1115 ads;
-#define WIFI_ESPNOW_CHANNEL 6
 //falta colocar para funcionar o sensor de co2
 
 

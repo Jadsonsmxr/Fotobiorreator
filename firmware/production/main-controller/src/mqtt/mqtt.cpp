@@ -6,20 +6,20 @@
 #include <sensors/co2.h>
 #include <esp_wifi.h>
 #include <sensors/light.h>
-#include <main.h>
+#include "app_config.h"
 
-// DEFINICOES das variaveis (apenas aqui!)
-const char* SSID = "NPN-CBA";
-const char* PASSWORD = "cba12345";
-// const char* SSID = "Jadson";
-// const char* PASSWORD = "12345678*";
-// const char* SSID = "Daniel celular";
-// const char* PASSWORD = "code2702";
-const char* BROKER_MQTT = "192.168.2.104";
-const int BROKER_PORT = 1883;
-const char* ID_MQTT = "esp32_mqtt_fotobiorreator_cba";
+#if __has_include("secrets_local.h")
+#include "secrets_local.h"
+#else
+#include "secrets_example.h"
+#endif
 
-const char* NAMESPACE = "cba_fotobiorreator";
+// Definicoes carregadas de arquivo local nao versionado (ou exemplo publico).
+const char *SSID = WIFI_SSID;
+const char *PASSWORD = WIFI_PASSWORD;
+const char *BROKER_MQTT = MQTT_BROKER_HOST;
+const int BROKER_PORT = MQTT_BROKER_PORT;
+const char *NAMESPACE = MQTT_NAMESPACE;
 
 // IDs dos sensores (devem existir no banco de dados do servidor)
 const int SENSOR_ID_CO2_INTERNO = 1;
@@ -37,16 +37,30 @@ WiFiClient wifiClient;
 PubSubClient MQTT(wifiClient);
 
 int wifiChannel = 0;
+char mqttClientId[64] = {0};
 
-bool mqttProntoParaPublicar() {
+void montaClientIdMQTT()
+{
+  uint64_t chipId = ESP.getEfuseMac();
+  snprintf(mqttClientId,
+           sizeof(mqttClientId),
+           "esp32_fotobiorreator_%04X%08X",
+           (uint16_t)(chipId >> 32),
+           (uint32_t)chipId);
+}
+
+bool mqttProntoParaPublicar()
+{
   return WiFi.status() == WL_CONNECTED && MQTT.connected();
 }
 
-void logErroPublicacao() {
+void logErroPublicacao()
+{
   static unsigned long lastErrorPrint = 0;
   unsigned long now = millis();
 
-  if (now - lastErrorPrint >= MQTT_ERROR_LOG_INTERVAL_MS) {
+  if (now - lastErrorPrint >= MQTT_ERROR_LOG_INTERVAL_MS)
+  {
     Serial.print("Publicacao MQTT indisponivel. WiFi=");
     Serial.print(WiFi.status());
     Serial.print(" MQTT=");
@@ -55,18 +69,22 @@ void logErroPublicacao() {
   }
 }
 
-void conectaWiFi() {
+void conectaWiFi()
+{
   static unsigned long lastTry = 0;
   static bool canalCapturado = false;
   static bool firstTry = true;
 
-  if (WiFi.status() != WL_CONNECTED) {
+  if (WiFi.status() != WL_CONNECTED)
+  {
     canalCapturado = false;
     esp_wifi_set_channel(WIFI_ESPNOW_CHANNEL, WIFI_SECOND_CHAN_NONE);
   }
 
-  if (WiFi.status() == WL_CONNECTED) {
-    if (!canalCapturado) {
+  if (WiFi.status() == WL_CONNECTED)
+  {
+    if (!canalCapturado)
+    {
       wifiChannel = WiFi.channel();
       Serial.print("Conectado com IP: ");
       Serial.println(WiFi.localIP());
@@ -78,7 +96,8 @@ void conectaWiFi() {
     return;
   }
 
-  if (!firstTry && millis() - lastTry < WIFI_RETRY_INTERVAL_MS) {
+  if (!firstTry && millis() - lastTry < WIFI_RETRY_INTERVAL_MS)
+  {
     return;
   }
   firstTry = false;
@@ -86,25 +105,28 @@ void conectaWiFi() {
 
   Serial.print("Canal WiFi em fallback para ESP-NOW: ");
   Serial.println(WIFI_ESPNOW_CHANNEL);
-  Serial.print("Conectando na rede: ");
-  Serial.println(SSID);
+  Serial.println("Conectando na rede Wi-Fi configurada...");
   esp_wifi_set_channel(WIFI_ESPNOW_CHANNEL, WIFI_SECOND_CHAN_NONE);
   WiFi.begin(SSID, PASSWORD, WIFI_ESPNOW_CHANNEL);
 }
 
-void conectaMQTT() {
+void conectaMQTT()
+{
   static unsigned long lastTry = 0;
   static bool firstTry = true;
 
-  if (MQTT.connected()) {
+  if (MQTT.connected())
+  {
     return;
   }
 
-  if (WiFi.status() != WL_CONNECTED) {
+  if (WiFi.status() != WL_CONNECTED)
+  {
     return;
   }
 
-  if (!firstTry && millis() - lastTry < MQTT_RETRY_INTERVAL_MS) {
+  if (!firstTry && millis() - lastTry < MQTT_RETRY_INTERVAL_MS)
+  {
     return;
   }
   firstTry = false;
@@ -112,38 +134,51 @@ void conectaMQTT() {
 
   Serial.print("Conectando no broker MQTT: ");
   Serial.println(BROKER_MQTT);
+  Serial.print("Client ID MQTT: ");
+  Serial.println(mqttClientId);
 
-  if (MQTT.connect(ID_MQTT)) {
+  if (MQTT.connect(mqttClientId))
+  {
     Serial.println("Conectado ao broker MQTT!");
-  } else {
+  }
+  else
+  {
     Serial.print("Falha na conexao MQTT. state=");
     Serial.println(MQTT.state());
   }
 }
 
-void mantemConexoes() {
+void mantemConexoes()
+{
   conectaWiFi();
 
-  if (WiFi.status() != WL_CONNECTED) {
-    if (MQTT.connected()) {
+  if (WiFi.status() != WL_CONNECTED)
+  {
+    if (MQTT.connected())
+    {
       MQTT.disconnect();
     }
     return;
   }
 
-  if (!MQTT.connected()) {
+  if (!MQTT.connected())
+  {
     conectaMQTT();
   }
 }
 
-void mqtt_disconnect() {
-  if (MQTT.connected()) {
+void mqtt_disconnect()
+{
+  if (MQTT.connected())
+  {
     MQTT.disconnect();
   }
 }
 
-bool publicarSensor(int sensor_id, float value) {
-  if (!mqttProntoParaPublicar()) {
+bool publicarSensor(int sensor_id, float value)
+{
+  if (!mqttProntoParaPublicar())
+  {
     logErroPublicacao();
     return false;
   }
@@ -158,7 +193,8 @@ bool publicarSensor(int sensor_id, float value) {
   char topic[100];
   snprintf(topic, sizeof(topic), "%s/sensors/%d/data", NAMESPACE, sensor_id);
 
-  if (MQTT.publish(topic, jsonBuffer)) {
+  if (MQTT.publish(topic, jsonBuffer))
+  {
     // Serial.print("[");
     // Serial.print(topic);
     // Serial.print("] ");
@@ -170,9 +206,11 @@ bool publicarSensor(int sensor_id, float value) {
   return false;
 }
 
-void mqtt_setup() {
+void mqtt_setup()
+{
   WiFi.setAutoReconnect(true);
   WiFi.persistent(false);
+  montaClientIdMQTT();
   conectaWiFi();
 
   MQTT.setServer(BROKER_MQTT, BROKER_PORT);
@@ -191,14 +229,17 @@ void mqtt_setup() {
   Serial.println("=======================================\n");
 }
 
-void mqtt_loop() {
+void mqtt_loop()
+{
   mantemConexoes();
 
-  if (MQTT.connected()) {
+  if (MQTT.connected())
+  {
     MQTT.loop();
   }
 
-  if (!mqttProntoParaPublicar()) {
+  if (!mqttProntoParaPublicar())
+  {
     return;
   }
 
@@ -206,24 +247,26 @@ void mqtt_loop() {
   static uint8_t publishStep = 0;
   unsigned long now = millis();
 
-  if (now - lastPublish < MQTT_PUBLISH_INTERVAL_MS) {
+  if (now - lastPublish < MQTT_PUBLISH_INTERVAL_MS)
+  {
     return;
   }
   lastPublish = now;
 
-  switch (publishStep) {
-    case 0:
-      publicarSensor(SENSOR_ID_CO2_INTERNO, co2);
-      break;
-    case 1:
-      publicarSensor(SENSOR_ID_TEMP_INTERNO, temperature);
-      break;
-    case 2:
-      publicarSensor(SENSOR_ID_PH, ph_act);
-      break;
-    case 3:
-      publicarSensor(SENSOR_ID_LUMINOSIDADE, luminosidade);
-      break;
+  switch (publishStep)
+  {
+  case 0:
+    publicarSensor(SENSOR_ID_CO2_INTERNO, co2);
+    break;
+  case 1:
+    publicarSensor(SENSOR_ID_TEMP_INTERNO, temperature);
+    break;
+  case 2:
+    publicarSensor(SENSOR_ID_PH, ph_act);
+    break;
+  case 3:
+    publicarSensor(SENSOR_ID_LUMINOSIDADE, luminosidade);
+    break;
   }
 
   publishStep = (publishStep + 1) % 4;

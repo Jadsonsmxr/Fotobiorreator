@@ -6,7 +6,7 @@
 #include <sensors/ph.h>
 #include <sensors/light.h>
 #include <esp_wifi.h>
-#include <main.h>
+#include "app_config.h"
 
 
 static bool espnowInitialized = false;

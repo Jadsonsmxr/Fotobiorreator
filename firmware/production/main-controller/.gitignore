@@ -11,3 +11,7 @@
 ehthumbs.db
 Thumbs.db
 .txt
+include/secrets_local.h
+.pio/
+.vscode/
+*.code-workspace
