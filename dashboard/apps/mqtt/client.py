@@ -10,9 +10,9 @@ from apps.websocket import emit_kpi_update, emit_sensor_update
 
 MQTT_ENABLED = os.getenv("MQTT_ENABLED", "true").lower() == "true"
 MQTT_REQUIRED = os.getenv("MQTT_REQUIRED", "false").lower() == "true"
-MQTT_BROKER = os.getenv("MQTT_BROKER", "127.0.0.1")
+MQTT_BROKER = os.getenv("MQTT_BROKER")
 MQTT_PORT = int(os.getenv("MQTT_PORT", "1883"))
-MQTT_TOPIC = os.getenv("MQTT_TOPIC", "cba_fotobiorreator/sensors/+/data")
+MQTT_TOPIC = os.getenv("MQTT_TOPIC")
 
 MQTT_CONNECT_ERRORS = {
     1: "versao de protocolo incorreta",
@@ -117,6 +117,16 @@ def start_mqtt(app):
     if not MQTT_ENABLED:
         _set_runtime_state("disabled", "Desabilitado", "MQTT desabilitado por configuracao de ambiente.", None)
         app.logger.warning("MQTT desabilitado por configuracao de ambiente.")
+        return None
+
+    if not MQTT_BROKER or not MQTT_TOPIC:
+        message = "MQTT_BROKER e MQTT_TOPIC devem ser definidos no .env quando MQTT estiver habilitado."
+        _set_runtime_state("error", "Configuracao invalida", message, "missing_env")
+        if MQTT_REQUIRED:
+            raise RuntimeError(message)
+
+        app.logger.warning(message)
+        app.logger.warning("A aplicacao continuara em execucao sem ingestao MQTT.")
         return None
 
     client = mqtt.Client(userdata={"app": app})
