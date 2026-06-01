@@ -6,3 +6,5 @@ firmware/**/.DS_Store
 firmware/**/logs/
 firmware/**/logs/*.log
 dashboard/.venv/
+
+Fotobiorreator.code-workspace
