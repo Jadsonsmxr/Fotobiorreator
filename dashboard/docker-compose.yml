@@ -1,27 +1,13 @@
-version: '3.8'
+version: "3.8"
+
 services:
-  appseed-app:
-    container_name: appseed_app
-    restart: always
+  dashboard:
+    container_name: dashboard
+    restart: unless-stopped
     build: .
-    networks:
-      - db_network
-      - web_network
-  nginx:
-    container_name: nginx
-    restart: always
-    image: "nginx:latest"
+    env_file:
+      - .env
     ports:
-      - "5085:5085"
+      - "5000:5005"
     volumes:
-      - ./nginx:/etc/nginx/conf.d
-    networks:
-      - web_network
-    depends_on: 
-      - appseed-app
-networks:
-  db_network:
-    driver: bridge
-  web_network:
-    driver: bridge
- 
+      - ./apps:/app/apps
