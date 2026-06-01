@@ -1,0 +1,10 @@
+.DS_Store
+.DS_Store
+firmware/production/main-controller/main-controller.code-workspace
+
+firmware/**/.DS_Store
+firmware/**/logs/
+firmware/**/logs/*.log
+dashboard/.venv/
+
+Fotobiorreator.code-workspace
