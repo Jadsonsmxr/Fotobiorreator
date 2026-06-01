@@ -14,4 +14,4 @@ RUN pip install --upgrade pip \
 
 COPY . .
 
-CMD ["sh", "-c", "SKIP_RUNTIME_BOOTSTRAP=1 flask db upgrade && exec gunicorn --config gunicorn-cfg.py run:app"]
+CMD ["sh", "-c", "SKIP_RUNTIME_BOOTSTRAP=1 flask db upgrade -d migrations && exec gunicorn --config gunicorn-cfg.py run:app"]
