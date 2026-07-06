@@ -134,7 +134,7 @@ def has_google():
 
 @login_manager.unauthorized_handler
 def unauthorized_handler():
-    return render_template('home/page-403.html'), 403
+    return redirect(url_for('authentication_blueprint.login'))
 
 
 @blueprint.errorhandler(403)
