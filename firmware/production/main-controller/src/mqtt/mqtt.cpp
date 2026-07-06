@@ -265,7 +265,7 @@ void mqtt_loop()
     publicarSensor(SENSOR_ID_PH, ph_act);
     break;
   case 3:
-    publicarSensor(SENSOR_ID_LUMINOSIDADE, luminosidade);
+    // publicarSensor(SENSOR_ID_LUMINOSIDADE, luminosidade);
     break;
   }
 
