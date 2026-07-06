@@ -4,10 +4,10 @@ import { initDashboardPageCharts } from "./dashboard.js";
 
 function isDashboardRealtimePage() {
   return Boolean(
-    document.getElementById("co2-total") &&
-    document.getElementById("efficiency") &&
-    document.getElementById("co2-monthly") &&
-    document.getElementById("active-time") &&
+    document.getElementById("medium-condition") &&
+    document.getElementById("culture-stability") &&
+    document.getElementById("adequate-time") &&
+    document.getElementById("sensor-integrity") &&
     document.getElementById("gaugeco2") &&
     document.getElementById("gaugeph") &&
     document.getElementById("gaugeTemperature") &&
@@ -46,6 +46,26 @@ function updateKPI(kpis) {
   });
 }
 
+async function fetchKpisSnapshot() {
+  try {
+    const response = await fetch("/api/kpis", {
+      credentials: "same-origin",
+      headers: {
+        "Accept": "application/json"
+      }
+    });
+
+    if (!response.ok) {
+      console.warn("Falha ao buscar KPIs:", response.status);
+      return;
+    }
+
+    updateKPI(await response.json());
+  } catch (error) {
+    console.warn("Falha ao buscar KPIs:", error);
+  }
+}
+
 function initRealtimeDashboard() {
   const socket = io({
     transports: ["websocket"]
@@ -71,6 +91,11 @@ function initRealtimeDashboard() {
 
   window.addEventListener("pagehide", disconnectSocket, { once: true });
   window.addEventListener("beforeunload", disconnectSocket, { once: true });
+
+  fetchKpisSnapshot();
+  const kpiPollingInterval = window.setInterval(fetchKpisSnapshot, 15000);
+  window.addEventListener("pagehide", () => window.clearInterval(kpiPollingInterval), { once: true });
+  window.addEventListener("beforeunload", () => window.clearInterval(kpiPollingInterval), { once: true });
 }
 
 

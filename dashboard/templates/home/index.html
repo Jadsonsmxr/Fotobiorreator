@@ -13,12 +13,12 @@
                 <div class="card KPI">
                     <div class="card-header">
                         
-                        <i class="tim-icons icon-world color-co2total"></i> 
+                        <i class="tim-icons icon-molecule-40 color-co2total"></i> 
 
                     </div>
                     <div class="card-body">
-                        <h4 class="card-title"> CO<sub>2</sub> Removido Total</h4> 
-                        <h3 id="co2-total" class="KPI-value is-pending-data">--</h3>  
+                        <h4 class="card-title">Condição do Meio</h4> 
+                        <h3 id="medium-condition" class="KPI-value is-pending-data">--</h3>  
                         
                     </div>
 
@@ -32,8 +32,8 @@
                         <i class="tim-icons icon-sound-wave color-efficiency"></i>   
                     </div>
                     <div class="card-body">
-                        <h4 class="card-title">Eficiência Atual</h4> 
-                        <h3 id="efficiency" class="KPI-value is-pending-data">--</h3>  
+                        <h4 class="card-title">Estabilidade do Cultivo</h4> 
+                        <h3 id="culture-stability" class="KPI-value is-pending-data">--</h3>  
                         
                     </div>
 
@@ -43,11 +43,11 @@
                 <div class="card KPI">
                     <div class="card-header">
                         
-                        <i class="tim-icons icon-molecule-40 color-co2monthly"></i>   
+                        <i class="tim-icons icon-watch-time color-co2monthly"></i>   
                     </div>
                     <div class="card-body">
-                        <h4 class="card-title">Redução Mensal de CO<sub>2</sub></h4> 
-                        <h3 id="co2-monthly" class="KPI-value is-pending-data">--</h3>  
+                        <h4 class="card-title">Tempo em Condição Adequada</h4> 
+                        <h3 id="adequate-time" class="KPI-value is-pending-data">--</h3>  
                         
                     </div>
                 </div>
@@ -57,16 +57,28 @@
                 <div class="card KPI">
                     <div class="card-header">
                         
-                        <i class="tim-icons icon-watch-time color-watch-time"></i>
+                        <i class="tim-icons icon-chart-bar-32 color-watch-time"></i>
                     </div>
                     <div class="card-body">
-                        <h4 class="card-title">Tempo Ativo</h4>
-                        <h3 id="active-time" class="KPI-value is-pending-data">--</h3>
+                        <h4 class="card-title">Integridade dos Sensores</h4>
+                        <h3 id="sensor-integrity" class="KPI-value is-pending-data">--</h3>
                         
                     </div>
                 </div>
             </div>
 
+            <!-- KPIs anteriores mantidos como referência:
+                 - co2-total: CO2 Removido Total
+                 - efficiency: Eficiência Atual
+                 - co2-monthly: Redução Mensal de CO2
+                 - active-time: Tempo Ativo
+
+                 KPIs futuros sugeridos quando CO2 e luminosidade estiverem confiáveis:
+                 - Tendência de CO2
+                 - Potencial Fotossintético
+                 - Remoção estimada de CO2
+                 - Eficiência de captura baseada em entrada/saída calibradas
+            -->
             
         </div>
 
@@ -76,105 +88,99 @@
 
 
 
-        <div class="row dashboard-overview">
-            <!-- RETIRANDO O GRAFICO DE REMOCAO DE CO2 -->
-            <!-- <div class="col-12 col-xl-8">
-                <div class="card card-chart">
-                    <div class="card-header ">
-                    
-                        <div class="row">
-                            <div class="col-sm-6 text-left">
-                                
-
-                                
-                                <h2 class="card-title">Remoção de CO<sub>2</sub></h2>
+        <div class="row dashboard-monitoring">
+            <div class="col-12 col-xl-8">
+                <div class="row dashboard-overview">
+                    <!-- RETIRANDO O GRAFICO DE REMOCAO DE CO2 -->
+                    <!-- <div class="col-12 col-xl-8">
+                        <div class="card card-chart">
+                            <div class="card-header ">
+                                <div class="row">
+                                    <div class="col-sm-6 text-left">
+                                        <h2 class="card-title">Remoção de CO<sub>2</sub></h2>
+                                    </div>
+                                </div>
                             </div>
-                        
+                            <div class="card-body">
+                                <div class="chart-area">
+                                    <canvas id="chartBig1"></canvas>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="chart-area">
-                            <canvas id="chartBig1"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div> -->
+                    </div> -->
 
-            <div class="col-12 col-xl-4">
-                <div class="card card-chart">
-                    <div class="card-header ">
-
+                    <div class="col-12 col-md-6">
+                        <div class="card card-chart">
+                            <div class="card-header ">
                                 <h3 class="card-title">CO<sub>2</sub></h3>
-                        
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-area">
+                                    <!-- <canvas id="chartCo2"></canvas> -->
+                                    <div id="gaugeco2"> </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <div class="chart-area">
-                            <!-- <canvas id="chartCo2"></canvas> -->
-                             <div id="gaugeco2"> </div>
+
+                    <div class="col-12 col-md-6">
+                        <div class="card card-chart">
+                            <div class="card-header">
+                                <h3 class="card-title"> pH</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-area">
+                                    <div id="gaugeph"> </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- <div class="row">
+                    <div class="col-12">
+                        <div class = "monitor-Title" >
+                            <h3> Monitoramento em Tempo Real</h3>
+                        </div>
+                    </div>
+                </div> -->
+
+                <div class="row dashboard-gauges">
+                    <div class="col-12 col-md-6">
+                        <div class="card card-chart">
+                            <div class="card-header">
+                                <h3 class="card-title"> Temperatura</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-area">
+                                    <!-- <canvas id="chartTemperature"></canvas> -->
+                                    <div id="gaugeTemperature"> </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="card card-chart">
+                            <div class="card-header">
+                                <h3 class="card-title"> Luminosidade</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-area">
+                                    <!-- <canvas id="chartLuminosity"></canvas> -->
+                                    <div id="gaugeLuminosity"> </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="col-md-6 col-xl-4">
-                
-                <div class="card card-chart">
-                    <div class="card-header">
-                       
-                        <h3 class="card-title"> pH</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="chart-area">
-                            <div id="gaugeph"> </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-        </div>
-
-        <!-- <div class="row">
-            <div class="col-12">
-                <div class = "monitor-Title" >
-                    <h3> Monitoramento em Tempo Real</h3>
-                </div>
-            </div>
-        </div> -->
-
-
-
-
-
-        <div class="row dashboard-gauges">
-            
-            <div class="col-md-6 col-xl-4">
-                <div class="card card-chart">
-                    <div class="card-header">
-                        
-                        <h3 class="card-title"> Temperatura</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="chart-area">
-                            <!-- <canvas id="chartTemperature"></canvas> -->
-                             <div id="gaugeTemperature"> </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-12 col-xl-4">
-                <div class="card card-chart">
-                    <div class="card-header">
-                        
-                        <h3 class="card-title"> Luminosidade</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="chart-area">
-                            <!-- <canvas id="chartLuminosity"></canvas> -->
-                             <div id="gaugeLuminosity"> </div>
-                        </div>
-                    </div>
-                </div>
+            <div class="col-12 col-xl-4 dashboard-reactor-visual">
+                <img
+                    class="dashboard-reactor-image"
+                    src="{{ url_for('static', filename='assets/img/fotobiorreator1-transparent.png') }}"
+                    alt="Fotobiorreator"
+                >
             </div>
         </div>
        

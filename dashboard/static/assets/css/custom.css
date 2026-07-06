@@ -38,7 +38,13 @@
 
 .KPI .KPI-value {
     margin-bottom: 0px;
-
+    font-family: "Poppins", sans-serif;
+    font-size: 1.28rem;
+    font-weight: 500;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    color: rgba(255, 255, 255, 0.88);
+    white-space: nowrap;
 }
 
 .KPI .card-body .card-title {
@@ -79,6 +85,37 @@
 
 }
 
+.dashboard-monitoring {
+    align-items: stretch;
+}
+
+.dashboard-reactor-visual {
+    min-height: 520px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: 30px;
+}
+
+.dashboard-reactor-image {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    height: min(72vh, 680px);
+    max-height: 100%;
+    object-fit: contain;
+}
+
+@media (max-width: 1199.98px) {
+    .dashboard-reactor-visual {
+        min-height: 380px;
+    }
+
+    .dashboard-reactor-image {
+        height: min(52vh, 460px);
+    }
+}
+
 
 @keyframes pendingPulse {
 
@@ -98,6 +135,14 @@
 }
 
 body.white-content .KPI-value.is-pending-data {
+    color: rgba(32, 38, 57, 0.5);
+}
+
+body.white-content .KPI .KPI-value {
+    color: #1f2937;
+}
+
+body.white-content .KPI .KPI-value.is-pending-data {
     color: rgba(32, 38, 57, 0.5);
 }
 

@@ -9,7 +9,8 @@ from zoneinfo import ZoneInfo
 from apps.home import blueprint
 from apps.mqtt.client import get_mqtt_runtime_status
 from apps.services.cycle_service import CycleService
-from flask import current_app, redirect, render_template, request, url_for
+from apps.services.kpi_service import KPIService
+from flask import current_app, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from jinja2 import TemplateNotFound
 
@@ -134,6 +135,12 @@ def delete_cycle(cycle_id):
             redirect_kwargs['date_to'] = redirect_date_to
 
         return redirect(url_for('home_blueprint.route_template', **redirect_kwargs))
+
+
+@blueprint.route('/api/kpis')
+@login_required
+def dashboard_kpis():
+    return jsonify(KPIService.get_kpis())
 
 
 @blueprint.route('/<template>')

@@ -520,11 +520,16 @@ export function initDashboardPageCharts() {
     window.gaugeLuminosity = null;
     
     // Elementos de KPIs
-    window.elementoCo2Total = document.getElementById("co2-total");
-    window.elementoEfficiency = document.getElementById("efficiency");
-    window.elementoCo2Monthly = document.getElementById("co2-monthly");
-    window.elementoActiveTime = document.getElementById("active-time");
-    //document.getElementById("co2-total").innerText = "80.5 kg"; // Exemplo de atualização do valor total de CO2 removido
+    window.elementoMediumCondition = document.getElementById("medium-condition");
+    window.elementoCultureStability = document.getElementById("culture-stability");
+    window.elementoAdequateTime = document.getElementById("adequate-time");
+    window.elementoSensorIntegrity = document.getElementById("sensor-integrity");
+
+    // KPIs anteriores preservados como referência para evolução futura:
+    // window.elementoCo2Total = document.getElementById("co2-total");
+    // window.elementoEfficiency = document.getElementById("efficiency");
+    // window.elementoCo2Monthly = document.getElementById("co2-monthly");
+    // window.elementoActiveTime = document.getElementById("active-time");
 
     // TODO: todo esse código que hoje está dentro de main.initDashboardPageCharts
 }
